@@ -153,8 +153,9 @@ int main(int argc, char* argv[]){
     n = stoi(argv[1]);
     k = stoi(argv[2]);
     l = stoi(argv[3]);
+    bool lex = stoi(argv[4]);
 
-    outname += to_string(n) + "_" + to_string(k) + + "_" + to_string(l) + ".out";
+    outname += to_string(n) + "_" + to_string(k) + + "_" + to_string(l) + "_" + to_string(lex) + ".out";
     freopen(outname.c_str(), "w", stdout);
     pickV(1, k, 1);
     pickV(1, l, -1);
@@ -167,6 +168,10 @@ int main(int argc, char* argv[]){
         }
     }
     int idx = n*n+1;
+    if(!lex){
+        cout << endl;
+        return 0;
+    }
     for(int i=1;i<n;i++){
         vector<int> v1, v2;
         for(int j=1;j<=n;j++){
