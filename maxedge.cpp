@@ -122,6 +122,7 @@ void addEdges2(int sign){
             tmp.push_back(sign*flat(a, b));
         }
     }
+    // cout << "tmp " << tmp.size() << "\n";
     for(int i=0;i<tmp.size();i++){
         for(int j=0;j<tmp.size();j++){
             if(j==i) continue;

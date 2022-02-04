@@ -1,5 +1,17 @@
-//stolen from David Tang
-#include <bits/stdc++.h>
+#include <algorithm>
+#include <bitset>
+#include <iterator>
+#include <math.h>
+#include <new>
+#include <numeric>
+#include <queue>
+#include <set>
+#include <iostream>
+#include <string>
+#include <thread>
+#include <vector>
+#include <map>
+#include <array>
 
 using namespace std;
 
@@ -42,10 +54,18 @@ int main(int argc, char *argv[])
 
     while(cin >> temp){
         if(temp.compare("0")==0){
+            if(currVar ==1){
+                currLine.append("0\n");
+                outputFirst.append(currLine);
+                currLine = "";
+                currVar = 0;
+            }
+            else{
                 currLine.append("0\n");
                 outputSecond.append(currLine);
                 currLine = "";
                 currVar = 0;
+            }
             zeros++;
         }
         else{
