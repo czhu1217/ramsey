@@ -51,7 +51,7 @@ int main(){
                     nodes.push_back(i4);
                     for(int i5 = i4+1;i5<=n;i5++){
                         nodes.push_back(i5);
-                        if(!check(nodes, 2, nc2(n)-1)){
+                        if(!check(nodes, 2, nc2(n)-2)){
                             for(int i=0;i<nodes.size();i++){
                                 cout << nodes[i] << " ";
                             }
