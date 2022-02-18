@@ -132,6 +132,50 @@ void addEdges2(int sign){
     }
 }
 
+//Encodes that Xs is lexicographically before Ys
+//l is the length of the array
+//Uses additional variables start to start+l-2 to represent whether xi = yi
+//Uses additional variables start+l-1 to start+2*l-2 to represent whether xi <= yi
+//Uses additional variables start+2*l-1 to start+3*l-3 to represent whether start and ... and start+i are true
+//In total, uses 3 * l - 2 additional varaibles
+void writeLexico(vector<int> Xs, vector<int>Ys, int l, int start){
+    //Writes the additional variables representing xi = yi
+    for(int i=0;i<l-1; i++){
+        cout << -1 * Xs[i] << " " << -1 * Ys[i] << " " << (start+i) << " " << 0 << endl;
+        cout << -1 * Xs[i] << " " << Ys[i] << " " << -1 * (start+i) << " " << 0 << endl;
+        cout << Xs[i] << " " << -1 * Ys[i] << " " << -1 * (start+i) << " " << 0 << endl;
+        cout << Xs[i] << " " << Ys[i] << " " << (start+i) << " " << 0 << endl;
+    }
+
+    //Writes the additional variables representing xi <= yi
+    for(int i=0;i<l;i++){
+        cout << -1 * Xs[i] << " " <<  Ys[i] << " " << -1 * (start+l-1+i) << " " << 0 << endl;
+        cout << Xs[i] << " " << (start+l-1+i) << " " << 0 << endl;
+        cout << -1 * Ys[i] << " " << (start+l-1+i) << " " << 0 << endl;
+    }
+
+    //Writes the additional variables representing start and ... and start + i
+    for(int i=0;i<l-1;i++){
+        for(int j=0;j<=i;j++){
+            cout << -1 * (start+2*l-1+i) << " " << start+j << " " << 0 << endl; 
+        }
+        cout << (start+2*l-1+i) << " ";
+        for(int j=0;j<=i;j++){
+            cout << -1 * (start+j) << " ";
+        }
+        cout << 0 << endl;
+    }
+
+    //Write that x1 <= y1
+    cout << start+l-1 << " " << 0 << endl;
+    
+    //Write that if x1 = y1 and x2 = y2 and ... and xi = yi then xi+1 <= yi+1 
+    for(int i=1;i<l;i++){
+        cout << -1 * (start+2*l-1+(i-1)) << " " << start+l-1+i << " " << 0 << endl;
+    }
+}
+
+
 void pickV(int cur,int m, int sign){
     if(v.size()==m){
         if(sign==1) addEdges(sign); else addEdges2(sign);
@@ -180,8 +224,8 @@ int main(int argc, char* argv[]){
             v1.push_back(flat(i, j));
             v2.push_back(flat(i+1, j));
         }
-        writeLex(v1, v2,  idx);
-        idx += v1.size()-1 + v1.size()-1 + v1.size()-2;
+        writeLexico(v1, v2, v1.size(), idx);
+        idx += v1.size()*3-2;
     }
     cout << endl;
     return 0;
