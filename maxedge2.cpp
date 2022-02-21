@@ -224,6 +224,21 @@ void pickV(int cur,int m, int sign){
     pickV(cur+1, m, sign);
 }
 
+void lex2(vi x, vi p, int start){
+    assert(x.size()==p.size());
+    int l = x.size();
+    cout << -x[0] << " " << p[0] << " 0\n";
+    for(int i=0;i<l;i++){
+        cout << -x[i] << " " << start+i << " 0\n";
+        cout << p[i] << " " << start+i << " 0\n";
+        for(int j=0;j<i;j++){
+            cout << -1*(start+j) << " ";
+        }
+        cout << -x[i] << " " << p[i] << " 0\n";
+    }
+
+}
+
 int main(int argc, char* argv[]){
     cout << "ok\n";
     //n is length and k is the number of colors, l is the length limit
@@ -270,8 +285,8 @@ int main(int argc, char* argv[]){
             v1.push_back(flat(i, j));
             v2.push_back(flat(i+1, j));
         }
-        writeLexico(v1, v2, v1.size(), idx);
-        idx += 3*v1.size() - 2;
+        lex2(v1, v2, idx);
+        idx += v1.size();
     }
     //count number of 1s in each row
     // cout << "idx " << idx << "\n";
@@ -316,8 +331,8 @@ int main(int argc, char* argv[]){
         #else
         // cout << "asjdhkads " << cntr1[0] << " " << cntri[0] << "\n";
         assert(cntri.size()==cntr1.size());
-        // writeLexico( cntr1, cntri, cntri.size(), idx);
-        idx += cntri.size()*3 - 2;
+        lex2( cntri, cntr1,  idx);
+        idx += cntri.size();
         #endif
     }
     cout << endl;

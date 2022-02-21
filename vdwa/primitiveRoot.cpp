@@ -45,10 +45,10 @@ vector<int> getArray(int p, int r){
 void fun(int p1){
     int pr = findPR(p1);        
         vector<int> ar = getArray(p1, pr);
-        for(int i=0;i<ar.size();i++){
-            int a = ar[i];
-            if(v[a]<0) ar[i]*=-1;
-        }
+        // for(int i=0;i<ar.size();i++){
+        //     int a = ar[i];
+        //     if(v[a]<0) ar[i]*=-1;
+        // }
         for(auto e:ar) cout << e  << " ";
         cout << endl;
 }
@@ -59,11 +59,11 @@ int main(){
     int n;
     cin >> n;
     v.push_back(0);
-    for(int i=1;i<=n;i++){
-        int a;
-        cin >> a;
-        v.push_back(a);
-    }
+    // for(int i=1;i<=n;i++){
+    //     int a;
+    //     cin >> a;
+    //     v.push_back(a);
+    // }
     while(true){
         int p1;
         cin >> p1;
