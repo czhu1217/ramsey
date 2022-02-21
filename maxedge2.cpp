@@ -12,6 +12,7 @@ vector<vector<int>> vec2d;
 vector<int> v;
 void print2(int a, int b){ cout << a << " " << b << " 0\n";}
 void print3(int a, int b, int c){ cout << a << " " << b << " " << c << " 0\n";}
+void print4(int a, int b, int c, int d){ cout << a << " " << b << " " << c << " " << d << " 0\n";}
 void iff(int a, int b){
     print2(a, -b);
     print2(-a, b);
@@ -69,9 +70,6 @@ int countOne(vector<int> a, int start){
     //start+1 means first variable is true;
     iff(start+1, a[0]);
     #endif
-
-
-
     vector<int> pre, cur;
     //the first array contains two elements: first variable 0, first variable 1
     pre.push_back(start); pre.push_back(start+1);
@@ -130,44 +128,267 @@ int countOne(vector<int> a, int start){
     }
     return start;
 }
-void writeLexico(vector<int> Xs, vector<int>Ys, int l, int start){
-    //Writes the additional variables representing xi = yi
-    for(int i=0;i<l-1; i++){
-        cout << -1 * Xs[i] << " " << -1 * Ys[i] << " " << (start+i) << " " << 0 << endl;
-        cout << -1 * Xs[i] << " " << Ys[i] << " " << -1 * (start+i) << " " << 0 << endl;
-        cout << Xs[i] << " " << -1 * Ys[i] << " " << -1 * (start+i) << " " << 0 << endl;
-        cout << Xs[i] << " " << Ys[i] << " " << (start+i) << " " << 0 << endl;
-    }
 
-    //Writes the additional variables representing xi <= yi
-    for(int i=0;i<l;i++){
-        cout << -1 * Xs[i] << " " <<  Ys[i] << " " << -1 * (start+l-1+i) << " " << 0 << endl;
-        cout << Xs[i] << " " << (start+l-1+i) << " " << 0 << endl;
-        cout << -1 * Ys[i] << " " << (start+l-1+i) << " " << 0 << endl;
-    }
+int countTriple(vi a, vi b, vi c, int sa, int sb, int sc, int st, vi &pre, vi &cur){
+    //v[0][1]
+    print2(-st, -a[0]);
+    print2(-st, -b[0]);
+    print2(-st, c[0]);
+    print4(a[0], b[0], -c[0], st);
+    pre.push_back(st++);
 
-    //Writes the additional variables representing start and ... and start + i
-    for(int i=0;i<l-1;i++){
-        for(int j=0;j<=i;j++){
-            cout << -1 * (start+2*l-1+i) << " " << start+j << " " << 0 << endl; 
+    //v[i][1-i]
+    for(int i=1;i<=l;i++){
+        cur.clear();
+        cur.push_back(-1);
+        //v[i][1]: st1 <-> pre1 or (not a and not b and c)
+        print2(-pre[1], st);
+        print4(a[i], b[i], -c[i], st);
+        print3(-a[i], pre[1], -st);
+        print3(-b[i], pre[1], -st);
+        print3(c[i], pre[1], -st);
+        cur.push_back(st++);
+        //v[i][j] <-> pre[j] or (pre[j-1] and ((not a) and (not b) and c))
+        //(¬Prej ∨ St) ∧ (¬Prej1 ∨ A ∨ B ∨ ¬C ∨ St) ∧ (Prej1 ∨ Prej ∨ ¬St) ∧ (¬A ∨ Prej ∨ ¬St) ∧ (¬B ∨ Prej ∨ ¬St) ∧ (C ∨ Prej ∨ ¬St)
+        for(int j=2;j<i;j++){
+            print2(-pre[j], st);
+            cout << pre[j-1] << " " << a[i] << " " << b[i] << " " << -c[i] << " " << st << " 0\n";
+            print3(pre[j-1], pre[j], -st);
+            print3(-a[i], pre[j], -st);
+            print3(-b[i], pre[j], -st);
+            print3(c[i], pre[j], -st);
+            cur.push_back(st++);
         }
-        cout << (start+2*l-1+i) << " ";
-        for(int j=0;j<=i;j++){
-            cout << -1 * (start+j) << " ";
-        }
-        cout << 0 << endl;
-    }
 
-    //Write that x1 <= y1
-    cout << start+l-1 << " " << 0 << endl;
-    
-    //Write that if x1 = y1 and x2 = y2 and ... and xi = yi then xi+1 <= yi+1 
-    for(int i=1;i<l;i++){
-        cout << -1 * (start+2*l-1+(i-1)) << " " << start+l-1+i << " " << 0 << endl;
+        //v[i][i] <-> pre[i-1] and ((not a) and (not b) and c))
+        cout << -pre[i-1] << " " << a[i] << " " << b[i] << " " << -c[i] << " " << st << " 0\n";
+        print2(-st, pre[i-1]);
+        print2(-st, -a[i]);
+        print2(-st, -b[i]);
+        print2(-st, c[i]);
+        pre = cur;
+        
     }
 }
 
+vi k3(vi a, vi b, vi c, int st){
+    vi ans;
+    //count the number of 1s in the first row. or number of pairs of (1, {1, 0}, {1, 0})
+    int l = a.size();
 
+    //k=1
+    st = countOne(a, st);
+    ans.push_back(st);
+
+    //k=2
+    vi pre, cur;
+    //count the number of pairs of (0, 1, 0) and (0, 1, 1)
+    //v[i][j]: at least j pairs of (0, 1, _) up at index i
+    //v[0][0]
+    print3(-st, a[0], -b[0]);
+    print2(st, -a[0]);
+    print2(st, b[0]);
+    pre.push_back(st++);
+
+    //v[0][1]
+    print3(a[0], -b[0], st);
+    print2(-st, -a[0]);
+    print2(-st, b[0]);
+    pre.push_back(st++);
+
+    //v[i][0-i]
+    for(int i=1;i<=l;i++){
+        cur.clear();
+        //v[i][0]
+        iff(st, pre[0]);
+        cur.push_back(st++);
+        for(int j=1;j<i;j++){
+            print2(-pre[j], st);
+            print4(-pre[j-1], a[i], -b[i], st);
+            print3(pre[j-1], pre[j], -st);
+            print3(-a[i], pre[j], st);
+            print3(b[i], pre[j], -st);
+            cur.push_back(st++);
+        }
+        print4(-pre[i], a[i], -b[i], st);
+        print2(-st, pre[i]);
+        print2(-st, -a[i]);
+        print2(-st, b[i]);
+        cur.push_back(st++);
+        pre = cur;
+    }
+    ans.push_back(st);
+
+    //k=3
+    pre.clear(); cur.clear()
+
+    //encode number of (0, 0, 1)
+    //v[0][1]
+    print2(-st, -a[0]);
+    print2(-st, -b[0]);
+    print2(-st, c[0]);
+    print4(a[0], b[0], -c[0], st);
+    pre.push_back(st++);
+
+    //v[i][1-i]
+    for(int i=1;i<=l;i++){
+        cur.clear();
+        cur.push_back(-1);
+        //v[i][1]: st1 <-> pre1 or (not a and not b and c)
+        print2(-pre[1], st);
+        print4(a[i], b[i], -c[i], st);
+        print3(-a[i], pre[1], -st);
+        print3(-b[i], pre[1], -st);
+        print3(c[i], pre[1], -st);
+        cur.push_back(st++);
+        //v[i][j] <-> pre[j] or (pre[j-1] and ((not a) and (not b) and c))
+        //(¬Prej ∨ St) ∧ (¬Prej1 ∨ A ∨ B ∨ ¬C ∨ St) ∧ (Prej1 ∨ Prej ∨ ¬St) ∧ (¬A ∨ Prej ∨ ¬St) ∧ (¬B ∨ Prej ∨ ¬St) ∧ (C ∨ Prej ∨ ¬St)
+        for(int j=2;j<i;j++){
+            print2(-pre[j], st);
+            cout << pre[j-1] << " " << a[i] << " " << b[i] << " " << -c[i] << " " << st << " 0\n";
+            print3(pre[j-1], pre[j], -st);
+            print3(-a[i], pre[j], -st);
+            print3(-b[i], pre[j], -st);
+            print3(c[i], pre[j], -st);
+            cur.push_back(st++);
+        }
+
+        //v[i][i] <-> pre[i-1] and ((not a) and (not b) and c))
+        cout << -pre[i-1] << " " << a[i] << " " << b[i] << " " << -c[i] << " " << st << " 0\n";
+        print2(-st, pre[i-1]);
+        print2(-st, -a[i]);
+        print2(-st, -b[i]);
+        print2(-st, c[i]);
+        pre = cur;
+        
+    }
+    //encode number of (0, 1, 1)
+    pre.clear(); cur.clear();
+    //v[0][1]
+    print2(-st, -a[0]);
+    print2(-st, b[0]);
+    print2(-st, c[0]);
+    print4(a[0], -b[0], -c[0], st);
+    pre.push_back(st++);
+
+    //v[i][1-i]
+    for(int i=1;i<=l;i++){
+        cur.clear();
+        cur.push_back(-1);
+        //v[i][1]: st1 <-> pre1 or (not a and not b and c)
+        print2(-pre[1], st);
+        print4(a[i], -b[i], -c[i], st);
+        print3(-a[i], pre[1], -st);
+        print3(b[i], pre[1], -st);
+        print3(c[i], pre[1], -st);
+        cur.push_back(st++);
+        //v[i][j] <-> pre[j] or (pre[j-1] and ((not a) and (not b) and c))
+        //(¬Prej ∨ St) ∧ (¬Prej1 ∨ A ∨ B ∨ ¬C ∨ St) ∧ (Prej1 ∨ Prej ∨ ¬St) ∧ (¬A ∨ Prej ∨ ¬St) ∧ (¬B ∨ Prej ∨ ¬St) ∧ (C ∨ Prej ∨ ¬St)
+        for(int j=2;j<i;j++){
+            print2(-pre[j], st);
+            cout << pre[j-1] << " " << a[i] << " " << -b[i] << " " << -c[i] << " " << st << " 0\n";
+            print3(pre[j-1], pre[j], -st);
+            print3(-a[i], pre[j], -st);
+            print3(b[i], pre[j], -st);
+            print3(c[i], pre[j], -st);
+            cur.push_back(st++);
+        }
+
+        //v[i][i] <-> pre[i-1] and ((not a) and (not b) and c))
+        cout << -pre[i-1] << " " << a[i] << " " << -b[i] << " " << -c[i] << " " << st << " 0\n";
+        print2(-st, pre[i-1]);
+        print2(-st, -a[i]);
+        print2(-st, b[i]);
+        print2(-st, c[i]);
+        pre = cur;
+        
+    }
+
+    
+    //encode number of (1, 0, 1)
+    pre.clear(); cur.clear();
+    //v[0][1]
+    print2(-st, a[0]);
+    print2(-st, -b[0]);
+    print2(-st, c[0]);
+    print4(-a[0], b[0], -c[0], st);
+    pre.push_back(st++);
+
+    //v[i][1-i]
+    for(int i=1;i<=l;i++){
+        cur.clear();
+        cur.push_back(-1);
+        //v[i][1]: st1 <-> pre1 or (not a and not b and c)
+        print2(-pre[1], st);
+        print4(-a[i], b[i], -c[i], st);
+        print3(a[i], pre[1], -st);
+        print3(-b[i], pre[1], -st);
+        print3(c[i], pre[1], -st);
+        cur.push_back(st++);
+        //v[i][j] <-> pre[j] or (pre[j-1] and ((not a) and (not b) and c))
+        //(¬Prej ∨ St) ∧ (¬Prej1 ∨ A ∨ B ∨ ¬C ∨ St) ∧ (Prej1 ∨ Prej ∨ ¬St) ∧ (¬A ∨ Prej ∨ ¬St) ∧ (¬B ∨ Prej ∨ ¬St) ∧ (C ∨ Prej ∨ ¬St)
+        for(int j=2;j<i;j++){
+            print2(-pre[j], st);
+            cout << pre[j-1] << " " << -a[i] << " " << b[i] << " " << -c[i] << " " << st << " 0\n";
+            print3(pre[j-1], pre[j], -st);
+            print3(a[i], pre[j], -st);
+            print3(-b[i], pre[j], -st);
+            print3(c[i], pre[j], -st);
+            cur.push_back(st++);
+        }
+
+        //v[i][i] <-> pre[i-1] and ((not a) and (not b) and c))
+        cout << -pre[i-1] << " " << -a[i] << " " << b[i] << " " << -c[i] << " " << st << " 0\n";
+        print2(-st, pre[i-1]);
+        print2(-st, a[i]);
+        print2(-st, -b[i]);
+        print2(-st, c[i]);
+        pre = cur;
+        
+    }
+
+    //encode number of (1, 1 ,1)
+    //v[0][1]
+    print2(-st, a[0]);
+    print2(-st, b[0]);
+    print2(-st, c[0]);
+    print4(-a[0], -b[0], -c[0], st);
+    pre.push_back(st++);
+
+    //v[i][1-i]
+    for(int i=1;i<=l;i++){
+        cur.clear();
+        cur.push_back(-1);
+        //v[i][1]: st1 <-> pre1 or (not a and not b and c)
+        print2(-pre[1], st);
+        print4(-a[i], -b[i], -c[i], st);
+        print3(a[i], pre[1], -st);
+        print3(b[i], pre[1], -st);
+        print3(c[i], pre[1], -st);
+        cur.push_back(st++);
+        //v[i][j] <-> pre[j] or (pre[j-1] and ((not a) and (not b) and c))
+        //(¬Prej ∨ St) ∧ (¬Prej1 ∨ A ∨ B ∨ ¬C ∨ St) ∧ (Prej1 ∨ Prej ∨ ¬St) ∧ (¬A ∨ Prej ∨ ¬St) ∧ (¬B ∨ Prej ∨ ¬St) ∧ (C ∨ Prej ∨ ¬St)
+        for(int j=2;j<i;j++){
+            print2(-pre[j], st);
+            cout << pre[j-1] << " " << -a[i] << " " << -b[i] << " " << -c[i] << " " << st << " 0\n";
+            print3(pre[j-1], pre[j], -st);
+            print3(a[i], pre[j], -st);
+            print3(b[i], pre[j], -st);
+            print3(c[i], pre[j], -st);
+            cur.push_back(st++);
+        }
+
+        //v[i][i] <-> pre[i-1] and ((not a) and (not b) and c))
+        cout << -pre[i-1] << " " << -a[i] << " " << -b[i] << " " << -c[i] << " " << st << " 0\n";
+        print2(-st, pre[i-1]);
+        print2(-st, a[i]);
+        print2(-st, b[i]);
+        print2(-st, c[i]);
+        pre = cur;
+        
+    }
+
+}
 void addEdges(int sign){
     int a, b;
     vector<int> tmp;
