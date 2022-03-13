@@ -91,4 +91,28 @@ int main(){
     }
     cout << "\n";
     cout << "okok!\n";
+    int ref1, ref2;
+    ref1 = ref2 = 0;
+    for(int k=1;k<=n;k++){
+        if(v[flat(1, k)]<=0&&v[flat(2, k)]>=1) ref1++;
+        if(v[flat(1, k)]>=1&&v[flat(2, k)]>=1) ref2++;
+    }
+    cout << ref1 << " " << ref2 << "\n";
+    cout << "oop\n";
+    for(int i=1;i<=n;i++){
+        for(int j=1;j<=n;j++){
+            if(i==j) continue;
+            cout << "i, j\n";
+            cout << i << " " << j << "\n";
+            int cnt1, cnt2;
+            cnt1 = cnt2 = 0;
+            for(int k=1;k<=n;k++){
+                // cout << v[flat(i, k)] << " " << v[flat(j, k)]<< "\n";
+                if(v[flat(i, k)]<0&&v[flat(j, k)]>=1) cnt1++;
+                if(v[flat(i, k)]>=1&&v[flat(j, k)]>=1) cnt2++;
+            }
+            cout << cnt1 << " " << cnt2 << "\n";
+            assert(cntr[i]>cntr[1]||(cnt1>ref1)||(cnt1==ref1&&cnt2>=ref2));
+        }
+    }
 }

@@ -11,6 +11,7 @@ This is mainly used as a place for all the docs and tools we have so far.
 [Palindromes (by Rose)](https://docs.google.com/spreadsheets/d/11BtnzcdnX-VF6cGEyT6puc7L1mIlo0dYVqtHAUpgrGo/edit?usp=sharing)
 ### Tools
 Getting rid of reflection: 
+
 [exe](https://github.com/czhu1217/ramsey/blob/main/vdwa/noref.exe)
 
 [src](https://github.com/czhu1217/ramsey/blob/main/vdwa/noReflection.cpp)
