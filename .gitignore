@@ -6,3 +6,6 @@
 /bad2
 /graphs
 /tmp
+*.cnf
+*.out
+*.exe

@@ -1,4 +1,23 @@
-#include <bits/stdc++.h>
+#include <algorithm>
+#include <cassert>
+#include <bitset>
+#include <iterator>
+#include <math.h>
+#include <new>
+#include <numeric>
+#include <queue>
+#include <set>
+#include <iostream>
+#include <string>
+#include <thread>
+#include <vector>
+#include <map>
+#include <array>
+#include <stdexcept>
+#include <stdio.h>
+#include <chrono>
+#include <fstream>
+#include <sstream>
 using namespace std;
 int n, v[4000];
 int flat(int a, int b){ return (a-1)*n+b;}
@@ -24,7 +43,9 @@ int main(){
     int cnt = 1;
     for(int i=1;i<=n;i++){
         for(int j=1;j<=n;j++){
-            cin >> v[cnt];
+            char c;
+            cin >> c;
+            v[cnt] = c - '0';
             cnt++;
         }
     }
@@ -33,7 +54,7 @@ int main(){
     for(int i=1;i<=n;i++){
         tmp = 0;
         for(int j=1;j<=n;j++){
-            if(v[cnt]<0){
+            if(v[cnt]<=0){
                 cout << "0 ";
             }
             else{ cout << "1 "; tmp++;}
@@ -68,14 +89,14 @@ int main(){
                     nodes.push_back(i4);
                     for(int i5 = i4+1;i5<=n;i5++){
                         nodes.push_back(i5);
-                        if(!check(nodes, 2, nc2(n)-2)){
-                            for(int i=0;i<nodes.size();i++){
-                                cout << nodes[i] << " ";
-                            }
-                            cout << "\n";
-                            cout << "wrong\n";
-                            return 0;
-                        }
+                        // if(!check(nodes, 2, nc2(n)-2)){
+                        //     for(int i=0;i<nodes.size();i++){
+                        //         cout << nodes[i] << " ";
+                        //     }
+                        //     cout << "\n";
+                        //     cout << "wrong\n";
+                        //     return 0;
+                        // }
                         nodes.pop_back();
                     }
                     nodes.pop_back();

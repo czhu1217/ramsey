@@ -226,32 +226,32 @@ int main(int argc, char* argv[]){
     // cout << "idx " << idx << "\n";
     
 
-    // vector<vi> row;
-    // vector<int> offset; row.push_back(offset);
-    // for(int i=1;i<=n;i++){
-    //     vi a;
-    //     for(int j=1;j<=n;j++){
-    //         a.push_back(flat(i, j));
-    //     }
-    //     row.push_back(a);
-    // }
+    vector<vi> row;
+    vector<int> offset; row.push_back(offset);
+    for(int i=1;i<=n;i++){
+        vi a;
+        for(int j=1;j<=n;j++){
+            a.push_back(flat(i, j));
+        }
+        row.push_back(a);
+    }
 
-    // idx = k1(row[1], idx);
-    // int k1r1 = idx - n;
-    // vi topk1;
-    // for(int i=0;i<n;i++){
-    //     topk1.push_back(k1r1+i);
-    // }
+    idx = k1(row[1], idx);
+    int k1r1 = idx - n;
+    vi topk1;
+    for(int i=0;i<n;i++){
+        topk1.push_back(k1r1+i);
+    }
 
 
-    // for(int i=2;i<=n;i++){
-    //     idx = k1(row[i], idx);
-    //     int tmp = idx - n;
-    //     vi curk1;
-    //     for(int j=0;j<n;j++) curk1.push_back(tmp+j);
-    //     lex2(topk1, curk1, idx);
-    //     idx += topk1.size();
-    // }
+    for(int i=2;i<=n;i++){
+        idx = k1(row[i], idx);
+        int tmp = idx - n;
+        vi curk1;
+        for(int j=0;j<n;j++) curk1.push_back(tmp+j);
+        lex2(topk1, curk1, idx);
+        idx += topk1.size();
+    }
     cout << endl;
     return 0;
 
