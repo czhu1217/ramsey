@@ -1,4 +1,23 @@
-#include <bits/stdc++.h>
+#include <algorithm>
+#include <cassert>
+#include <bitset>
+#include <iterator>
+#include <math.h>
+#include <new>
+#include <numeric>
+#include <queue>
+#include <set>
+#include <iostream>
+#include <string>
+#include <thread>
+#include <vector>
+#include <map>
+#include <array>
+#include <stdexcept>
+#include <stdio.h>
+#include <chrono>
+#include <fstream>
+#include <sstream>
 using namespace std;
 // #define DEBUG
 
@@ -133,32 +152,43 @@ void lex2(vi x, vi p, int start){
 
 }
 
+/*
+@brief : counts the number of 1s in a vector with a unary counter
+@param : a : a vector that is a row of the adj matrix
+         start: the starting index to allocate auxilary variables
+@return : returns the index of the next available variable
+*/
 int k1(vector<int> a, int start){
-    int ori = start;
     int l = a.size();
+    //pre: partial sum up to the previous index (used to calculate current partial sum)
+    //cur: current partial sum
+    //both have the form 111..100..0 where the # of 1s represents correspond to the number of ones up to the current index
+    //can also be seen as a sorted row
     vector<int> pre, cur;
+
+    //current var corresponding to whether the first index is a 1
     iff(start, a[0]);
 
-    //the first array contains two elements: first variable 0, first variable 1
+    //push the partial sum up to first index into pre (with offset to avoid using index 0 of pre)
     pre.push_back(-1);
     pre.push_back(start++);
-    #ifdef DEBUG
-            for(auto e:pre) cout << e << " ";
-            cout << "\n";
-        #endif
 
-    //loop all the i from 1 to a.size()-1
+    //compute the partial sum up to index i of a
     for(int i = 1; i< a.size(); i++){
         cur.clear();
         cur.push_back(-1);
-        //variable for if there's no 1 up until index i
+
+        //current partial sum is 0 if previous sum is 0 and a[i] is 0. 
+        //cur[1] <-> pre[1] or a[i]
         print2(-pre[1], start);
         print2(-a[i], start);
         print3(-start, pre[1], a[i]);
         cur.push_back(start++);
         
-        //loop all the possible 1 count: 1 to i-1
+        //loop all the possible 1 count: 1 to i
         for(int j=2;j<=i;j++){
+            //the jth bit of current partial sum is 1 if it was 1 previously or it was 1 in the j-1th bit and a[i] is 1
+            //cur[j] <-> pre[j] or (pre[j-1] and a[i])
             int b = a[i], c = pre[j], d = pre[j-1];
             print2(-c, start);
             print3(-b, -d, start);
@@ -166,22 +196,19 @@ int k1(vector<int> a, int start){
             print3(d, c, -start);
             cur.push_back(start++);
         }
-        //cur[i] iff pre[i-1] and a[i]
+        //cur[i+1] <-> pre[i] and a[i]
         print2(-start, pre[i]);
         print2(-start, a[i]);
         print3(start, -pre[i], -a[i]);
-        
         cur.push_back(start++);
+
+        //set pre to cur for the iteration
         pre = cur;
         assert(pre.size()==i+2);
-
-
     }
     return start;
 }
 int main(int argc, char* argv[]){
-    cout << "ok\n";
-    //n is length and k is the number of colors, l is the length limit
     string outname = "maxedge";
     // scanf("%d %d %d", &n, &k, &l);
     string tmp;

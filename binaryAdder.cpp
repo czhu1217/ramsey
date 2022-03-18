@@ -54,50 +54,6 @@ void iff(int a, int b){
 int n ,k, l; vi v;
 int flat(int i, int j){ return (i-1)*n+j; }
 
-int writeLex(vi a, vi b, int start){
-    int l = a.size();
-    cout << -a[0] << " " << b[0] << " 0\n";
-    //a[i] = b[i]
-    for(int i=0;i<l-1;i++){
-        cout << -1*a[i] << " " << b[i] << " " << -1*(start+i) << " 0\n";
-        cout << a[i] << " " << -1*b[i] << " " << -1*(start+i) << " 0\n";
-        cout << a[i] << " " << b[i] << " " << (start+i) << " 0\n";
-        cout << -a[i] << " " << -b[i] << " " << start+i << " 0\n";
-    }
-    int start2 = start + l-1;
-    //a[i+1] <= b[i+1]
-    for(int i=0;i<l-1;i++){
-        cout << a[i+1] << " " << start2+i << " 0\n";
-        cout << -b[i+1] << " " << start2+i << " 0\n";
-        cout << a[i+1] << " " << b[i+1] << " " << start2+i << " 0\n";
-    }
-    int start3 = start2 + l-1;
-    // encode t3
-
-    for(int i=0; i<l-2;i++){
-        cout << start3+i << " ";
-        for(int j=0;j<=i+1;j++){
-            cout << start + j << " ";
-        }
-        cout << " 0\n";
-        for(int j=0;j<=i+1;j++){
-            cout << -1*(start3+i) << " " << start+j << " 0\n";
-        }
-    }
-
-
-    cout << -1*(start) << " " << start2 << " 0 ";
-    //not t3[j] || t2[j]
-    for(int j=0;j<l-2;j++){
-        cout << -1*(start3+j) << " " << start2 + j+1<< " 0 ";
-    }
-    return start3 + l - 2;
-
-
-}
-
-
-
 void addEdges(int sign){
     int a, b;
     vector<int> tmp;
