@@ -114,7 +114,7 @@ void pickV(int cur,int m, int sign){
     pickV(cur+1, m, sign);
 }
 
-void lex2(vi x, vi p, int start){
+void lex(vi x, vi p, int start){
     assert(x.size()==p.size());
     int l = x.size();
     cout << -x[0] << " " << p[0] << " 0\n";
@@ -259,8 +259,8 @@ vi k1(vector<int> a, int &start){
 }
 
 //returns a vector of 3 numbers: first for start of count of (1, 1) pairs, second for (0, 1) pairs, third for new start
-vector<vi> k2(vi a, vi b, int &st){
-    vector<vi> ans;
+vi k2(vi a, vi b, int &st){
+    vi ans;
     int l = a.size();
     vi cnt01, cnt11, bicounter01, bicounter11;
 
@@ -284,7 +284,8 @@ vector<vi> k2(vi a, vi b, int &st){
     bicounter01 = k1(cnt01, st);
     //pass (1, 1) vector into binary adder
     bicounter11 = k1(cnt11, st);
-    ans.pb(bicounter01); ans.pb(bicounter11);
+    ans.insert(ans.end(), bicounter01.begin(), bicounter01.end());
+    ans.insert(ans.end(), bicounter11.begin(), bicounter11.end());
     return ans;
 }
 
@@ -301,14 +302,12 @@ int main(int argc, char* argv[]){
     string outname = "maxedge";
     // scanf("%d %d %d", &n, &k, &l);
     string tmp;
-    bool lex;
     n = stoi(argv[1]);
     k = stoi(argv[2]);
     l = stoi(argv[3]);
-    lex = stoi(argv[4]);
     // n = 20; k = 5; l = 5; lex = 1;
 
-    outname += to_string(n) + "_" + to_string(k) + + "_" + to_string(l) + "_" + to_string(lex) + ".out";
+    outname += to_string(n) + "_" + to_string(k) + + "_" + to_string(l) + ".out";
     #ifdef DEBUG
         printf("debug\n");
     #else 
@@ -335,7 +334,7 @@ int main(int argc, char* argv[]){
             v1.push_back(flat(i, j));
             v2.push_back(flat(i+1, j));
         }
-        lex2(v1, v2,  idx);
+        lex(v1, v2,  idx);
         idx += v1.size();
     }
     //count number of 1s in each row
@@ -351,69 +350,52 @@ int main(int argc, char* argv[]){
         }
         row.push_back(a);
     }
+/*
+        encode k=1 for first row
+    */
+    vi topk1 = k1(row[1], idx);
 
-    idx = k1(row[1], idx);
-    int k1r1 = idx - n;
-    vi topk1;
-    for(int i=0;i<n;i++){
-        topk1.push_back(k1r1+i);
-    }
-    int idx1, idx2, idx3;
-    // store k2 of row 1, 2
-    vi k2r1 = k2(row[1], row[2], idx);
-    idx = k2r1[2];
-    vi topk2, top01;
-    for(int i=0;i<n;i++){
-        topk2.push_back(k2r1[0]+i);
-    }
-    for(int i=0;i<n;i++){
-        topk2.push_back(k2r1[1]+i);
-    }
-
-
-
-    vi top7; top7.reserve(topk1.size()+topk2.size());
-    top7.insert(top7.end(), topk1.begin(), topk1.end());
-    top7.insert(top7.end(), topk2.begin(), topk2.end());
-    assert(top7.size()==3*n);
-    // top7.insert(top7.end(), topk3.begin(), topk3.end());
+    /*
+        encode k=2 additional constraints for first two rows
+    */
+    vi k2additional = k2(row[1], row[2], idx); 
+    assert(k2additional.size()==2*n);
+    vi topk2;
+    topk2.insert(topk2.end(), topk1.begin(), topk1.end());
+    topk2.insert(topk2.end(), k2additional.begin(), k2additional.end());
+    assert(topk2.size()==3*n);
 
 
     for(int i=1;i<=n;i++){
+        /*
+            encode k=1 for row i of adj matrix
+        */
 
-        idx = k1(row[i], idx);
-        int tmp = idx - n;
-        vi curk1;
-        for(int i=0;i<n;i++) curk1.push_back(tmp+i);
-        // lex2(  topk1, curk1, idx);
-        // idx += topk1.size();
-        // idx = checkEqual(cntr[1], cntr[i], idx);
-        // idx1 = idx-1;
-        vi a = row[i];
-        for(int j=1; j<=n;j++){//no
+        //curk1 is the unary adder that stores the k=1 constraint of the current row. 
+        vi curk1 = k1(row[i], idx);
+
+        for(int j=1; j<=n;j++){
             if(i==j) continue;
             if(i==1&&j==2) continue;
-            vi b = row[j];
-            vi v2 = k2(a, b, idx);
-            assert(idx+(a.size()+1)*a.size()==v2[2]);
-            idx = v2[2];
-            vi curk2, p01;
-            for(int k=0;k<n;k++){
-                curk2.push_back(v2[0]+k);
-            }
-            for(int k=0;k<n;k++){
-                curk2.push_back(v2[1]+k); 
-            }
-            assert(curk2.size()==2*n);
-            vi cur7;
-            cur7.insert(cur7.end(), curk1.begin(), curk1.end());
-            cur7.insert(cur7.end(), curk2.begin(), curk2.end());
-            assert(cur7.size()==top7.size());
-            assert(cur7.size()==3*n);
-            lex2(top7, cur7, idx);
-            idx += top7.size();
-        }
 
+            /*
+                encode k=2 for row i , j
+            */
+            vi curk2additional = k2(row[i], row[j],  idx);
+
+            assert(curk2additional.size()==2*n);
+
+            vi curk2; //curk2 is the concatenated vector for the current pair that will be used for k=2
+            curk2.insert(curk2.end(), curk1.begin(), curk1.end());
+            curk2.insert(curk2.end(), curk2additional.begin(), curk2additional.end());
+            assert(curk2.size()==topk2.size());
+            assert(curk2.size()==3*n);
+
+            /*
+                compares the k=2 encoding of first two rows and current pair of rows. 
+            */
+            lex(topk2, curk2, idx);
+        }
     }
     cout << endl;
     return 0;

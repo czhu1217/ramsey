@@ -174,7 +174,7 @@ void lex(vi x, vi p, int &start){
 
 }
 
-void lexConditional(vi x, vi p, int start, int k1){
+void lexConditional(vi x, vi p, int &start, int k1){
     assert(x.size()==p.size());
     int l = x.size();
     cout << -x[0] << " " << p[0] << " 0\n";
@@ -187,6 +187,7 @@ void lexConditional(vi x, vi p, int start, int k1){
         }
         cout << -x[i] << " " << p[i] << " 0\n";
     }
+    start += l;
 
 }
 vi k1(vi a, int &start){
@@ -362,6 +363,7 @@ int main(int argc, char* argv[]){
 
         //curk1 is the unary adder that stores the k=1 constraint of the current row. 
         vi curk1 = k1(row[i], idx);
+        lex(topk1, curk1, idx);
 
         for(int j=1; j<=n;j++){
             if(i==j) continue;
@@ -383,7 +385,7 @@ int main(int argc, char* argv[]){
             /*
                 compares the k=2 encoding of first two rows and current pair of rows. 
             */
-            lex(topk1, curk1, idx);
+            lexConditional(topk2, curk2, idx, flat(i, j));
         }
     }
     cout << endl;
