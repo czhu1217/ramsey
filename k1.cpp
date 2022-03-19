@@ -209,25 +209,25 @@ int k1(vector<int> a, int start){
     return start;
 }
 int main(int argc, char* argv[]){
-    string outname = "maxedge";
+    string outname = "k1";
     // scanf("%d %d %d", &n, &k, &l);
     string tmp;
     bool lex;
     n = stoi(argv[1]);
-    k = stoi(argv[2]);
-    l = stoi(argv[3]);
-    lex = stoi(argv[4]);
+    // k = stoi(argv[2]);
+    // l = stoi(argv[3]);
+    // lex = stoi(argv[4]);
     // n = 20; k = 5; l = 5; lex = 1;
 
-    outname += to_string(n) + "_" + to_string(k) + + "_" + to_string(l) + "_" + to_string(lex) + ".out";
+    outname +=  "_" + to_string(n) + ".out";
     #ifdef DEBUG
         printf("debug\n");
     #else 
         freopen(outname.c_str(), "w", stdout);
     #endif
 
-    pickV(1, k, 1);
-    pickV(1, l, -1);
+    // pickV(1, k, 1);
+    // pickV(1, l, -1);
     //ensures symmetry
     for(int i=1;i<=n;i++){
         cout << -flat(i, i) << " 0\n";

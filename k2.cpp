@@ -18,12 +18,33 @@
 #include <chrono>
 #include <fstream>
 #include <sstream>
-using namespace std;
-// #define DEBUG
-
+using namespace std; 
 typedef long long ll;
+typedef long double ld;
+typedef pair<ll, ll> pi;
+typedef pair<ll,ll> pl;
+typedef pair<ld,ld> pd;
+ 
 typedef vector<int> vi;
-typedef pair<int,int> pi;
+typedef vector<ld> vd;
+typedef vector<ll> vl;
+typedef vector<pi> vpi;
+typedef vector<pl> vpl;
+ 
+#define FOR(i, a, b) for (ll i=a; i<=(b); i++)
+#define F0R(i, a) for (ll i=0; i<(a); i++)
+#define FORd(i,a,b) for (ll i = (b)-1; i >= a; i--)
+#define F0Rd(i,a) for (ll i = (a)-1; i >= 0; i--)
+ 
+#define sz(x) (ll)(x).size()
+#define pb push_back
+#define f first
+#define s second
+#define lb lower_bound
+#define ub upper_bound
+#define all(x) x.begin(), x.end()
+#define ins insert
+
 //choose vertices
 int n, l, k;
 vector<vector<int>> vec2d;
@@ -137,7 +158,7 @@ void pickV(int cur,int m, int sign){
     pickV(cur+1, m, sign);
 }
 
-void lex(vi x, vi p, int start){
+void lex(vi x, vi p, int &start){
     assert(x.size()==p.size());
     int l = x.size();
     cout << -x[0] << " " << p[0] << " 0\n";
@@ -149,6 +170,7 @@ void lex(vi x, vi p, int start){
         }
         cout << -x[i] << " " << p[i] << " 0\n";
     }
+    start += l;
 
 }
 
@@ -167,19 +189,13 @@ void lexConditional(vi x, vi p, int start, int k1){
     }
 
 }
-int k1(vector<int> a, int start){
-    int ori = start;
-    int l = a.size();
+vi k1(vi a, int &start){
     vector<int> pre, cur;
     iff(start, a[0]);
 
     //the first array contains two elements: first variable 0, first variable 1
     pre.push_back(-1);
     pre.push_back(start++);
-    #ifdef DEBUG
-            for(auto e:pre) cout << e << " ";
-            cout << "\n";
-        #endif
 
     //loop all the i from 1 to a.size()-1
     for(int i = 1; i< a.size(); i++){
@@ -209,92 +225,42 @@ int k1(vector<int> a, int start){
         pre = cur;
         assert(pre.size()==i+2);
 
-
     }
-    return start;
+    pre.erase(pre.begin());
+    return pre;
 }
 
 
-//returns a vector of 3 numbers: first for start of count of (1, 1) pairs, second for (0, 1) pairs, third for new start
-vi k2(vi a, vi b, int st){
-    vi ans, pre, cur;
-    int l = a.size();
-    
-    //(0, 1) pairs
-    //v[0][1]
-    print3(a[0], -b[0], st);
-    print2(-st, -a[0]);
-    print2(-st, b[0]);
-    pre.push_back(-1);
-    pre.push_back(st++);
+//returns a vector of (0, 1) counter concatenated with (1, 1) counter
+vi k2(vi a, vi b, int &st){
+    vi ans;
+    vi cnt01, cnt11, counter01, counter11;
 
-    //v[i][-i]
-    for(int i=1;i<l;i++){
-        cur.clear();
-        cur.push_back(-1);
-        //(¬Pre ∨ St) ∧ (A ∨ ¬B ∨ St) ∧ (¬A ∨ Pre ∨ ¬St) ∧ (B ∨ Pre ∨ ¬St)
-        print2(-pre[1], st);
-        print3(a[i], -b[i], st);
-        print3(-a[i], pre[1], -st);
-        print3(b[i], pre[1], -st);
-        cur.push_back(st++);
-        for(int j=2;j<=i;j++){
-            print2(-pre[j], st);
-            print4(-pre[j-1], a[i], -b[i], st);
-            print3(pre[j-1], pre[j], -st);
-            print3(-a[i], pre[j], -st);
-            print3(b[i], pre[j], -st);
-            cur.push_back(st++);
-        }
-        print4(-pre[i], a[i], -b[i], st);
-        print2(-st, pre[i]);
-        print2(-st, -a[i]);
-        print2(-st, b[i]);
-        cur.push_back(st++);
-        pre = cur;
+    //writes variables to indicate (0, 1) pairs
+    FOR(i, 0, a.size()-1){
+        //st <-> -a[i] and b[i]
+        //cnf: (A ∨ ¬B ∨ St) ∧ (¬St ∨ ¬A) ∧ (¬St ∨ B)
+        print3(a[i], -b[i], st); print2(-st, -a[i]);  print2(-st, b[i]);
+        cnt01.pb(st++);
     }
-    ans.push_back(st-a.size());
 
-    //(1, 1) pairs
-    //v[0][1]
-    cur.clear(); pre.clear();
-    print3(-a[0], -b[0], st);
-    print2(-st, a[0]);
-    print2(-st, b[0]);
-    pre.push_back(-1);
-    pre.push_back(st++);
-    assert(pre.size()==2);
 
-    //v[i][-i]
-    for(int i=1;i<l;i++){
-        assert(pre.size()==i+1);
-        cur.clear();
-        cur.push_back(-1);
-        //v[i][1]
-        //(¬Pre ∨ St) ∧ (A ∨ ¬B ∨ St) ∧ (¬A ∨ Pre ∨ ¬St) ∧ (B ∨ Pre ∨ ¬St)
-        print2(-pre[1], st);
-        print3(-a[i], -b[i], st);
-        print3(a[i], pre[1], -st);
-        print3(b[i], pre[1], -st);
-        cur.push_back(st++);
-        for(int j=2;j<=i;j++){
-            print2(-pre[j], st);
-            print4(-pre[j-1], -a[i], -b[i], st);
-            print3(pre[j-1], pre[j], -st);
-            print3(a[i], pre[j], -st);
-            print3(b[i], pre[j], -st);
-            cur.push_back(st++);
-        }
-        print4(-pre[i], -a[i], -b[i], st);
-        print2(-st, pre[i]);
-        print2(-st, a[i]);
-        print2(-st, b[i]);
-        cur.push_back(st++);
-        pre = cur;
+    //writes variables to indicate (1, 1) pairs
+    FOR(i, 0, a.size()-1){
+        //st <-> a[i] and b[i]
+        //cnf: (-A ∨ ¬B ∨ St) ∧ (¬St ∨ A) ∧ (¬St ∨ B)
+        print3(-a[i], -b[i], st); print2(-st, a[i]);  print2(-st, b[i]);
+        cnt11.pb(st++);
     }
-    ans.push_back(st-a.size());
-    ans.push_back(st);
-    assert(ans.size()==3);
+    //pass (0, 1) vector into binary adder
+    counter01 = k1(cnt01, st);
+    assert(counter01.size()==n);
+    //pass (1, 1) vector into binary adder
+    counter11 = k1(cnt11, st);
+    assert(counter11.size()==n);
+
+    ans.insert(ans.end(), counter01.begin(), counter01.end());
+    ans.insert(ans.end(), counter11.begin(), counter11.end());
     return ans;
 }
 
@@ -316,27 +282,21 @@ int checkEqual(vi a, vi b, int st){
     return st;
 }
 
-// int cardLeq(vi a, vi b, int st){
-//     vi v;
-//     for(int i=0;i<a.size();i++){
-//         cout << 
-//     }
-//     return st-1;
+// int cardLeq(vi a, vi b, int &st){
+    
 // }
 int main(int argc, char* argv[]){
     cout << "ok\n";
     //n is length and k is the number of colors, l is the length limit
-    string outname = "maxedge";
+    string outname = "k2";
     // scanf("%d %d %d", &n, &k, &l);
     string tmp;
-    bool yeslex;
     n = stoi(argv[1]);
     k = stoi(argv[2]);
     l = stoi(argv[3]);
-    yeslex = stoi(argv[4]);
     // n = 20; k = 5; l = 5; lex = 1;
 
-    outname += to_string(n) + "_" + to_string(k) + + "_" + to_string(l) + "_" + to_string(yeslex) + ".out";
+    outname += "_" + to_string(n) + ".out";
     #ifdef DEBUG
         printf("debug\n");
     #else 
@@ -364,7 +324,6 @@ int main(int argc, char* argv[]){
             v2.push_back(flat(i+1, j));
         }
         lex(v1, v2,  idx);
-        idx += v1.size();
     }
     //count number of 1s in each row
     // cout << "idx " << idx << "\n";
@@ -380,83 +339,51 @@ int main(int argc, char* argv[]){
         row.push_back(a);
     }
 
-        /*
+    /*
         encode k=1 for first row
     */
-    idx = k1(row[1], idx); //idx is the next available variable. We increase it after encoding k1 for first row of adj matrix
-    int k1r1 = idx - n; //this is the first element of the unary counter
-    vi topk1; //topk1 is the unary adder that stores the k=1 constraint of the 1st row. 
-    for(int i=0;i<n;i++){
-        topk1.push_back(k1r1+i);
-    }
+    vi topk1 = k1(row[1], idx);
 
     /*
         encode k=2 additional constraints for first two rows
     */
-    vi k2r1 = k2(row[1], row[2], idx); 
-    //k2 returns a vector that contains [starting index of 1st counter, starting index of 2nd counter, index of next available variable]
-    idx = k2r1[2];
-    vi topk2; //topk2 is the unary adder that stores the k=2 additional constraint of row 1, 2. 
-    for(int i=0;i<n;i++){
-        topk2.push_back(k2r1[0]+i);
-    }
-    for(int i=0;i<n;i++){
-        topk2.push_back(k2r1[1]+i);
-    }
-
-    /*
-        Combine previous steps to produce a complete k=2 encoding
-    */
-    //top3 is the concatenated vector that will be used for ensuring k=2. It's topk1 concatenated with topk2
-    vi top3; top3.reserve(topk1.size()+topk2.size());
-    top3.insert(top3.end(), topk1.begin(), topk1.end());
-    top3.insert(top3.end(), topk2.begin(), topk2.end());
-    assert(top3.size()==3*n);
+    vi k2additional = k2(row[1], row[2], idx); 
+    assert(k2additional.size()==2*n);
+    vi topk2;
+    topk2.insert(topk2.end(), topk1.begin(), topk1.end());
+    topk2.insert(topk2.end(), k2additional.begin(), k2additional.end());
+    assert(topk2.size()==3*n);
 
 
     for(int i=1;i<=n;i++){
         /*
             encode k=1 for row i of adj matrix
         */
-        idx = k1(row[i], idx);
-        int tmp = idx - n;
 
         //curk1 is the unary adder that stores the k=1 constraint of the current row. 
-        vi curk1;
-        for(int i=0;i<n;i++) curk1.push_back(tmp+i);
-        vi a = row[i];
+        vi curk1 = k1(row[i], idx);
 
-        for(int j=1; j<=n;j++){//no
+        for(int j=1; j<=n;j++){
             if(i==j) continue;
             if(i==1&&j==2) continue;
 
             /*
                 encode k=2 for row i , j
             */
-            vi b = row[j];
-            vi v2 = k2(a, b, idx);
-            assert(idx+(a.size()+1)*a.size()==v2[2]);
-            idx = v2[2];
-            vi curk2; //curk2 is the unary adder that stores the k=2 additional constraint of the current pair (a, b). 
-            for(int k=0;k<n;k++){
-                curk2.push_back(v2[0]+k);
-            }
-            for(int k=0;k<n;k++){
-                curk2.push_back(v2[1]+k); 
-            }
-            assert(curk2.size()==2*n);
+            vi curk2additional = k2(row[i], row[j],  idx);
 
-            vi cur3; //cur3 is the concatenated vector for the current pair that will be used for k=2
-            cur3.insert(cur3.end(), curk1.begin(), curk1.end());
-            cur3.insert(cur3.end(), curk2.begin(), curk2.end());
-            assert(cur3.size()==top3.size());
-            assert(cur3.size()==3*n);
+            assert(curk2additional.size()==2*n);
+
+            vi curk2; //curk2 is the concatenated vector for the current pair that will be used for k=2
+            curk2.insert(curk2.end(), curk1.begin(), curk1.end());
+            curk2.insert(curk2.end(), curk2additional.begin(), curk2additional.end());
+            assert(curk2.size()==topk2.size());
+            assert(curk2.size()==3*n);
 
             /*
                 compares the k=2 encoding of first two rows and current pair of rows. 
             */
-            lex(top3, cur3, idx);
-            idx += top3.size();
+            lex(topk1, curk1, idx);
         }
     }
     cout << endl;

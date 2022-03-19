@@ -18,12 +18,32 @@
 #include <chrono>
 #include <fstream>
 #include <sstream>
-using namespace std;
-// #define DEBUG
-
+using namespace std; 
 typedef long long ll;
+typedef long double ld;
+typedef pair<ll, ll> pi;
+typedef pair<ll,ll> pl;
+typedef pair<ld,ld> pd;
+ 
 typedef vector<int> vi;
-typedef pair<int,int> pi;
+typedef vector<ld> vd;
+typedef vector<ll> vl;
+typedef vector<pi> vpi;
+typedef vector<pl> vpl;
+ 
+#define FOR(i, a, b) for (ll i=a; i<=(b); i++)
+#define F0R(i, a) for (ll i=0; i<(a); i++)
+#define FORd(i,a,b) for (ll i = (b)-1; i >= a; i--)
+#define F0Rd(i,a) for (ll i = (a)-1; i >= 0; i--)
+ 
+#define sz(x) (ll)(x).size()
+#define pb push_back
+#define f first
+#define s second
+#define lb lower_bound
+#define ub upper_bound
+#define all(x) x.begin(), x.end()
+#define ins insert
 //choose vertices
 int n, l, k;
 vector<vector<int>> vec2d;
@@ -36,49 +56,6 @@ void iff(int a, int b){
     print2(-a, b);
 }
 int flat(int i, int j){ return (i-1)*n+j; }
-
-int writeLex(vi a, vi b, int start){
-    int l = a.size();
-    cout << -a[0] << " " << b[0] << " 0\n";
-    //a[i] = b[i]
-    for(int i=0;i<l-1;i++){
-        cout << -1*a[i] << " " << b[i] << " " << -1*(start+i) << " 0\n";
-        cout << a[i] << " " << -1*b[i] << " " << -1*(start+i) << " 0\n";
-        cout << a[i] << " " << b[i] << " " << (start+i) << " 0\n";
-        cout << -a[i] << " " << -b[i] << " " << start+i << " 0\n";
-    }
-    int start2 = start + l-1;
-    //a[i+1] <= b[i+1]
-    for(int i=0;i<l-1;i++){
-        cout << a[i+1] << " " << start2+i << " 0\n";
-        cout << -b[i+1] << " " << start2+i << " 0\n";
-        cout << a[i+1] << " " << b[i+1] << " " << start2+i << " 0\n";
-    }
-    int start3 = start2 + l-1;
-    // encode t3
-
-    for(int i=0; i<l-2;i++){
-        cout << start3+i << " ";
-        for(int j=0;j<=i+1;j++){
-            cout << start + j << " ";
-        }
-        cout << " 0\n";
-        for(int j=0;j<=i+1;j++){
-            cout << -1*(start3+i) << " " << start+j << " 0\n";
-        }
-    }
-
-
-    cout << -1*(start) << " " << start2 << " 0 ";
-    //not t3[j] || t2[j]
-    for(int j=0;j<l-2;j++){
-        cout << -1*(start3+j) << " " << start2 + j+1<< " 0 ";
-    }
-    return start3 + l - 2;
-
-
-}
-
 
 
 void addEdges(int sign){
@@ -167,153 +144,148 @@ void lexConditional(vi x, vi p, int start, int k1){
     }
 
 }
-int k1(vector<int> a, int start){
-    int ori = start;
-    int l = a.size();
-    vector<int> pre, cur;
-    iff(start, a[0]);
 
-    //the first array contains two elements: first variable 0, first variable 1
-    pre.push_back(-1);
-    pre.push_back(start++);
-    #ifdef DEBUG
-            for(auto e:pre) cout << e << " ";
-            cout << "\n";
-        #endif
+/*
+    Input: takes in two digits a, b and st, a starting index to write auxillary variables
+    Output: returns {s, c} : {resulting current digit in the sum, carry}
+*/
+pi halfAdder(int a, int b, int st){
+    int s = st;
+    //s <-> a xor b
+    //s <-> (-a and b) or (a and -b)
+    /*cnf form: 
+        (A ∨ ¬B ∨ S) ∧ (¬A ∨ B ∨ S) ∧ (¬B ∨ ¬A ∨ ¬S) ∧ (A ∨ B ∨ ¬S)
+    */
 
-    //loop all the i from 1 to a.size()-1
-    for(int i = 1; i< a.size(); i++){
-        cur.clear();
-        cur.push_back(-1);
-        //variable for if there's no 1 up until index i
-        print2(-pre[1], start);
-        print2(-a[i], start);
-        print3(-start, pre[1], a[i]);
-        cur.push_back(start++);
-        
-        //loop all the possible 1 count: 1 to i-1
-        for(int j=2;j<=i;j++){
-            int b = a[i], c = pre[j], d = pre[j-1];
-            print2(-c, start);
-            print3(-b, -d, start);
-            print3(b, c, -start);
-            print3(d, c, -start);
-            cur.push_back(start++);
-        }
-        //cur[i] iff pre[i-1] and a[i]
-        print2(-start, pre[i]);
-        print2(-start, a[i]);
-        print3(start, -pre[i], -a[i]);
-        
-        cur.push_back(start++);
-        pre = cur;
-        assert(pre.size()==i+2);
+    print3(a, -b, s);
+    print3(-a, b, s);
+    print3(-b, -a, -s);
+    print3(a, b, -s);
+    st++;
 
+    int c = st;
+    //c <-> a and b
+    print3(-a, -b, c);
+    print2(-c, a);
+    print2(-c, b);
 
-    }
-    return start;
+    return {s, c};
+
+}
+/*
+    Input: 
+        a, b: 2 binary digits
+        c: carry from previous calculation
+        st: starting index to write auxillary variables
+    Output: returns {s, co} : {resulting current digit in the sum, carry}
+*/
+pi fullAdder(int a, int b, int c, int st){
+    int s = st;
+    //st (s) <-> a xor b xor c
+    /*cnf form:
+        (B ∨ A ∨ ¬C ∨ St) ∧ (¬C ∨ A ∨ B ∨ St) ∧ (B ∨ ¬C ∨ A ∨ St) ∧ (¬C ∨ ¬A ∨ ¬B ∨ St)
+        ∧ (B ∨ C ∨ ¬A ∨ St) ∧ (B ∨ ¬A ∨ C ∨ St) ∧ (A ∨ C ∨ ¬B ∨ St) ∧ (¬St ∨ ¬A ∨ C ∨ ¬B)
+        ∧ (¬St ∨ ¬B ∨ C ∨ ¬A) ∧ (¬St ∨ ¬B ∨ A ∨ ¬C) ∧ (¬St ∨ ¬A ∨ B ∨ ¬C) ∧ (¬St ∨ C ∨ A ∨ B)
+    */
+    print4(b, a, -c, st); print4(-c, a, b, st); print4(b, -c, a, st); print4(-c, -a, -b, st);
+    print4(b, c, -a, st); print4(b, -a, c, st); print4(a, c, -b, st); print4(-st, -a, c, -b);
+    print4(-st, -b, c, -a); print4(-st, -b, a, -c); print4(-st, -a, b, -c); print4(-st, c, a, b);
+    st++;
+    int co = st;
+    //st (co) <-> (a or b) and (a or c) and (b or c)
+    //(¬A ∨ ¬B ∨ St) ∧ (¬C ∨ ¬A ∨ ¬B ∨ St) ∧ (¬C ∨ ¬B ∨ St) ∧ (¬A ∨ ¬C ∨ St)
+    //(¬A ∨ ¬B ∨ ¬C ∨ St) ∧ (¬St ∨ A ∨ B) ∧ (¬St ∨ A ∨ C) ∧ (¬St ∨ B ∨ C)
+    print3(-a, -b, st); print4(-c, -a, -b, st); print3(-c, -b, st); print3(-a, -c, st);
+    print4(-a, -b, -c, st); print3(-st, a, b); print3(-st, a, c); print3(-st, b, c);
+    return {s, co};
 }
 
-
-//returns a vector of 3 numbers: first for start of count of (1, 1) pairs, second for (0, 1) pairs, third for new start
-vi k2(vi a, vi b, int st){
-    vi ans, pre, cur;
+//input: Two non-negative i-bit numbers a and b (stored as vectors of the same length), least significant bit first
+//output:  an n i + 1-bit non-negative number (stored in a vector) which is the sum of a and b, least significant bit first.
+vi rippleAdder(vi a, vi b, int &st){
+    assert(a.size()==b.size());
     int l = a.size();
-    
-    //(0, 1) pairs
-    //v[0][1]
-    print3(a[0], -b[0], st);
-    print2(-st, -a[0]);
-    print2(-st, b[0]);
-    pre.push_back(-1);
-    pre.push_back(st++);
+    vi ans;
 
-    //v[i][-i]
-    for(int i=1;i<l;i++){
-        cur.clear();
-        cur.push_back(-1);
-        //(¬Pre ∨ St) ∧ (A ∨ ¬B ∨ St) ∧ (¬A ∨ Pre ∨ ¬St) ∧ (B ∨ Pre ∨ ¬St)
-        print2(-pre[1], st);
-        print3(a[i], -b[i], st);
-        print3(-a[i], pre[1], -st);
-        print3(b[i], pre[1], -st);
-        cur.push_back(st++);
-        for(int j=2;j<=i;j++){
-            print2(-pre[j], st);
-            print4(-pre[j-1], a[i], -b[i], st);
-            print3(pre[j-1], pre[j], -st);
-            print3(-a[i], pre[j], -st);
-            print3(b[i], pre[j], -st);
-            cur.push_back(st++);
-        }
-        print4(-pre[i], a[i], -b[i], st);
-        print2(-st, pre[i]);
-        print2(-st, -a[i]);
-        print2(-st, b[i]);
-        cur.push_back(st++);
-        pre = cur;
+    //compute the least sig bit
+    pi p = halfAdder(a[0], b[0], st);
+    st += 2;
+    //store least sig bit into answer vector 
+    ans.pb(p.f);
+
+    //computer the 2nd to second last digit
+    FOR(i, 1, l-1){
+        //compute current (digit, carry) pair
+        p = fullAdder(a[i], b[i], p.s, st);
+        st += 2;
+        //store current digit into answer
+        ans.pb(p.f);
     }
-    ans.push_back(st-a.size());
-
-    //(1, 1) pairs
-    //v[0][1]
-    cur.clear(); pre.clear();
-    print3(-a[0], -b[0], st);
-    print2(-st, a[0]);
-    print2(-st, b[0]);
-    pre.push_back(-1);
-    pre.push_back(st++);
-    assert(pre.size()==2);
-
-    //v[i][-i]
-    for(int i=1;i<l;i++){
-        assert(pre.size()==i+1);
-        cur.clear();
-        cur.push_back(-1);
-        //v[i][1]
-        //(¬Pre ∨ St) ∧ (A ∨ ¬B ∨ St) ∧ (¬A ∨ Pre ∨ ¬St) ∧ (B ∨ Pre ∨ ¬St)
-        print2(-pre[1], st);
-        print3(-a[i], -b[i], st);
-        print3(a[i], pre[1], -st);
-        print3(b[i], pre[1], -st);
-        cur.push_back(st++);
-        for(int j=2;j<=i;j++){
-            print2(-pre[j], st);
-            print4(-pre[j-1], -a[i], -b[i], st);
-            print3(pre[j-1], pre[j], -st);
-            print3(a[i], pre[j], -st);
-            print3(b[i], pre[j], -st);
-            cur.push_back(st++);
-        }
-        print4(-pre[i], -a[i], -b[i], st);
-        print2(-st, pre[i]);
-        print2(-st, a[i]);
-        print2(-st, b[i]);
-        cur.push_back(st++);
-        pre = cur;
-    }
-    ans.push_back(st-a.size());
-    ans.push_back(st);
-    assert(ans.size()==3);
+    //store last carry into answer
+    ans.pb(p.s);
     return ans;
 }
 
-int checkEqual(vi a, vi b, int st){
+
+//zero is a variable that's always set to false, one is a variable that's always set to true
+int zero, one;
+vi k1(vector<int> a, int &start){
+    //ans will be used as the accumulated sum
+    vi ans;
+    //initially ans is 0
+    ans.pb(zero); 
+
+    //compute the sum by adding each digit with the accumulated sum
+    FOR(i, 0, a.size()-1){
+        vi cur;
+        //len is the maximum possible length of ans up to this point
+        int len = log2(i+1)+1;
+
+        //make cur the same length as ans by adding a[i] to the front and leading zeros afterwards
+        cur.pb(a[i]); 
+        while(cur.size()<len) cur.pb(zero);
+
+        //prune ans if it's longer than len (getting rid of most sig digit since we know it must be 0)
+        while(ans.size()>len){
+            int z = ans.back();
+            ans.pop_back();
+        }
+
+        //compute new accumulated sum by passing in current sum, digit, starting index of new var to rippleAdder
+        ans = rippleAdder(ans, cur, start);
+    }
+
+    return ans;
+}
+
+//returns a vector of 3 numbers: first for start of count of (1, 1) pairs, second for (0, 1) pairs, third for new start
+vector<vi> k2(vi a, vi b, int &st){
+    vector<vi> ans;
     int l = a.size();
-    vi va;
-    for(int i=0;i<l;i++){
-        //(¬A ∨ ¬B ∨ C) ∧ (A ∨ B ∨ C) ∧ (¬B ∨ A ∨ ¬C) ∧ (¬A ∨ B ∨ ¬C)
-        print3(-a[i], -b[i], st); print3(a[i], b[i], st); print3(-b[i], a[i], -st); print3(-a[i], b[i], st);
-        va.push_back(st++);
+    vi cnt01, cnt11, bicounter01, bicounter11;
+
+    //writes variables to indicate (0, 1) pairs
+    FOR(i, 0, a.size()-1){
+        //st <-> -a[i] and b[i]
+        //cnf: (A ∨ ¬B ∨ St) ∧ (¬St ∨ ¬A) ∧ (¬St ∨ B)
+        print3(a[i], -b[i], st); print2(-st, -a[i]);  print2(-st, b[i]);
+        cnt01.pb(st++);
     }
-    for(auto e:va){
-        cout << -e << " ";
+
+
+    //writes variables to indicate (1, 1) pairs
+    FOR(i, 0, a.size()-1){
+        //st <-> a[i] and b[i]
+        //cnf: (-A ∨ ¬B ∨ St) ∧ (¬St ∨ A) ∧ (¬St ∨ B)
+        print3(-a[i], -b[i], st); print2(-st, a[i]);  print2(-st, b[i]);
+        cnt11.pb(st++);
     }
-    cout << st << " 0\n";
-    for(auto e:va) print2(-st, e);
-    st++;
-    //st is one larger than the actual equal variable
-    return st;
+    //pass (0, 1) vector into binary adder
+    bicounter01 = k1(cnt01, st);
+    //pass (1, 1) vector into binary adder
+    bicounter11 = k1(cnt11, st);
+    ans.pb(bicounter01); ans.pb(bicounter11);
+    return ans;
 }
 
 // int cardLeq(vi a, vi b, int st){
