@@ -237,12 +237,15 @@ vi k1(vector<int> a, int &start){
     return ans;
 }
 int main(int argc, char* argv[]){
-    string outname = "binadd";
+    string outname = "k2_";
     string tmp;
-    bool lex;
-    cin >> n >> k >> l;
+    n = stoi(argv[1]);
+    k = stoi(argv[2]);
+    l = stoi(argv[3]);
 
-    outname += to_string(n) + "_" + to_string(k) + + "_" + to_string(l) + ".out";
+
+    outname += to_string(n) + ".out";
+    freopen(outname.c_str(), "w", stdout);
 
     pickV(1, k, 1);
     pickV(1, l, -1);
@@ -267,6 +270,8 @@ int main(int argc, char* argv[]){
         lex2(v1, v2,  idx);
         idx += v1.size();
     }
+
+    // cout << "huh";
     
 
     vector<vi> row;

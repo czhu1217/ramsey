@@ -114,7 +114,7 @@ void pickV(int cur,int m, int sign){
     pickV(cur+1, m, sign);
 }
 
-void lex(vi x, vi p, int start){
+void lex(vi x, vi p, int &start){
     assert(x.size()==p.size());
     int l = x.size();
     cout << -x[0] << " " << p[0] << " 0\n";
@@ -126,10 +126,11 @@ void lex(vi x, vi p, int start){
         }
         cout << -x[i] << " " << p[i] << " 0\n";
     }
+    start += l;
 
 }
 
-void lexConditional(vi x, vi p, int start, int k1){
+void lexConditional(vi x, vi p, int &start, int k1){
     assert(x.size()==p.size());
     int l = x.size();
     cout << -x[0] << " " << p[0] << " 0\n";
@@ -142,9 +143,9 @@ void lexConditional(vi x, vi p, int start, int k1){
         }
         cout << -x[i] << " " << p[i] << " 0\n";
     }
+    start += l;
 
 }
-
 /*
     Input: takes in two digits a, b and st, a starting index to write auxillary variables
     Output: returns {s, c} : {resulting current digit in the sum, carry}
@@ -289,17 +290,11 @@ vi k2(vi a, vi b, int &st){
     return ans;
 }
 
-// int cardLeq(vi a, vi b, int st){
-//     vi v;
-//     for(int i=0;i<a.size();i++){
-//         cout << 
-//     }
-//     return st-1;
-// }
+
 int main(int argc, char* argv[]){
     cout << "ok\n";
     //n is length and k is the number of colors, l is the length limit
-    string outname = "maxedge";
+    string outname = "k2_";
     // scanf("%d %d %d", &n, &k, &l);
     string tmp;
     n = stoi(argv[1]);
@@ -307,7 +302,7 @@ int main(int argc, char* argv[]){
     l = stoi(argv[3]);
     // n = 20; k = 5; l = 5; lex = 1;
 
-    outname += to_string(n) + "_" + to_string(k) + + "_" + to_string(l) + ".out";
+    outname += to_string(n)  + ".out";
     #ifdef DEBUG
         printf("debug\n");
     #else 
@@ -354,16 +349,17 @@ int main(int argc, char* argv[]){
         encode k=1 for first row
     */
     vi topk1 = k1(row[1], idx);
+    reverse(topk1.begin(), topk1.end());
 
     /*
         encode k=2 additional constraints for first two rows
     */
-    vi k2additional = k2(row[1], row[2], idx); 
-    assert(k2additional.size()==2*n);
-    vi topk2;
-    topk2.insert(topk2.end(), topk1.begin(), topk1.end());
-    topk2.insert(topk2.end(), k2additional.begin(), k2additional.end());
-    assert(topk2.size()==3*n);
+    // vi k2additional = k2(row[1], row[2], idx); 
+    // // assert(k2additional.size()==2*n);
+    // vi topk2;
+    // topk2.insert(topk2.end(), topk1.begin(), topk1.end());
+    // topk2.insert(topk2.end(), k2additional.begin(), k2additional.end());
+    // assert(topk2.size()==3*n);
 
 
     for(int i=1;i<=n;i++){
@@ -373,31 +369,35 @@ int main(int argc, char* argv[]){
 
         //curk1 is the unary adder that stores the k=1 constraint of the current row. 
         vi curk1 = k1(row[i], idx);
+        reverse(curk1.begin(), curk1.end());
+        lex(topk1, curk1, idx);
 
-        for(int j=1; j<=n;j++){
-            if(i==j) continue;
-            if(i==1&&j==2) continue;
+        // for(int j=1; j<=n;j++){
+        //     if(i==j) continue;
+        //     if(i==1&&j==2) continue;
 
-            /*
-                encode k=2 for row i , j
-            */
-            vi curk2additional = k2(row[i], row[j],  idx);
+        //     /*
+        //         encode k=2 for row i , j
+        //     */
+        //     vi curk2additional = k2(row[i], row[j],  idx);
 
-            assert(curk2additional.size()==2*n);
+        //     // assert(curk2additional.size()==2*n);
 
-            vi curk2; //curk2 is the concatenated vector for the current pair that will be used for k=2
-            curk2.insert(curk2.end(), curk1.begin(), curk1.end());
-            curk2.insert(curk2.end(), curk2additional.begin(), curk2additional.end());
-            assert(curk2.size()==topk2.size());
-            assert(curk2.size()==3*n);
+        //     vi curk2; //curk2 is the concatenated vector for the current pair that will be used for k=2
+        //     curk2.insert(curk2.end(), curk1.begin(), curk1.end());
+        //     curk2.insert(curk2.end(), curk2additional.begin(), curk2additional.end());
+        //     assert(curk2.size()==topk2.size());
+        //     // assert(curk2.size()==3*n);
 
-            /*
-                compares the k=2 encoding of first two rows and current pair of rows. 
-            */
-            lex(topk2, curk2, idx);
-        }
+        //     /*
+        //         compares the k=2 encoding of first two rows and current pair of rows. 
+        //     */
+        //     lexConditional(topk2, curk2, idx, flat(i, j));
+        // }
     }
     cout << endl;
     return 0;
 
 }
+
+

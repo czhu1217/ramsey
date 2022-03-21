@@ -282,10 +282,17 @@ int checkEqual(vi a, vi b, int st){
     //st is one larger than the actual equal variable
     return st;
 }
+void cardLeq(vi a, vi b, int k1){
+    for(int i=0;i<a.size();i++){
+        print3(-a[i], b[i], k1);
+    }
+}
 
-// int cardLeq(vi a, vi b, int &st){
-    
-// }
+void cardLeq(vi a, vi b){
+    for(int i=0;i<a.size();i++){
+        print2(-a[i], b[i]);
+    }
+}
 int main(int argc, char* argv[]){
     cout << "ok\n";
     //n is length and k is the number of colors, l is the length limit
