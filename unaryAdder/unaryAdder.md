@@ -6,9 +6,34 @@ below is an example of a unary adder that counts the number of 1s in a given vec
 
 It uses nC2 auxillary variables where n is the length of the given vector 
 
+### Pseudocode for unary adder
+
+All array starts at index 1
+
+```
+//takes in an array 'a' which we want to count the number of ones of and returns the unary counter
+unaryCounter (array a):
+	initialize 2 arrays: currentCounter and previousCounter
+	currentCounter[1] <-> a[1]
+	for i in range 2 to a.length :
+		clear currentCounter
+		currentCounter[1] <-> previousCounter[1] or a[i]
+		
+		for j in range 2 to i-1:
+			currentCounter[j] <-> previousCounter[j] or (previousCounter[j-1] and a[i])
+		
+		currentCounter[i] <-> prevoiusCounter[i-1] and a[i]
+		previousCounter = currentCounter //sets up for next iteration
+		
+	return currentCounter
+```
+
+### Example and C++ code
+
 Example of rough idea: 
 
 given `[0 1 0 1 1]`, the adder looks like
+
 ```
 0
 1 0
@@ -23,8 +48,7 @@ given `[0 1 0 1 1]`, the adder looks like
          start: the starting index to allocate auxilary variables
 @return : returns the index of the next available variable
 */
-int k1(vector<int> a, int start){
-    int l = a.size();
+vector<int> k1(vector<int> a, int &start){
     //pre: partial sum up to the previous index (used to calculate current partial sum)
     //cur: current partial sum
     //both have the form 111..100..0 where the # of 1s represents correspond to the number of ones up to the current index
@@ -71,102 +95,146 @@ int k1(vector<int> a, int start){
         pre = cur;
         assert(pre.size()==i+2);
     }
-    //returns the index of the next available index
-    return start;
+    pre.erase(pre.begin());
+    return pre;
+    
 }
 ```
-To get the final vector that represents the unary counter, we can take the indices from k1(a, start) - n to k1(a, start) - 1
+### Ensuring that the top row is the best
 
-## Unary adder for k=2 and k=3
-The idea for k=2 and k=3 is very similar to k=1, except each of the unary adders look for something different than whether the current index of the given vector is a 1. 
+Given two unary counters x and y, instead of using lex, simply ensuring that there is no index such that x[i] = 1 and y[i] = 0 ensures that x <= y since we already know that they are sorted with all 1s in the front. 
 
-### Condition to ensure k = 2
-For k=2, we take in two vectors a and b,  and use the unary adder twice. 
-- First we use the unary adder to count the number of (0, 1) pairs in the given pair of vectors. A (0, 1) pair is an index such that `a[i] = 0` and `b[i]=1`
-- Then we counter the number of (1, 1) pairs similar to above
-- We take the final vectors that represents each of the counters in the 2 steps above and concatenate them after the k=1 counter to get a vector of size 3n. 
-- Lastly we compare this vector with the vector produces by the top two rows and makes sure that the vector produced by top two rows is always lexicographically smaller or equal to the current vector. 
+This is achieved with the `cardLeq` function:
+
 ```cpp
-    /*
+void cardLeq(vi a, vi b){
+    for(int i=0;i<a.size();i++){
+        print2(-a[i], b[i]);
+    }
+}
+```
+
+### How the adder is used to ensure k=1
+
+1. compute the counter for row 1
+2. for each subsequent row:
+   1. compute the counter for that row
+   2. use `cardLeq` to ensure that counter for first row is less than or equal to counter for second row. 
+
+```cpp
+	vi topk1 = k1(row[1], idx);
+
+    for(int i=2;i<=n;i++){
+        //curk1 is the unary adder that stores the k=1 constraint of the current row. 
+        vi curk1 = k1(row[i], idx);
+        // lex(topk1, curk1, idx);
+        cardLeq(topk1, curk1);
+    }
+```
+
+
+
+## K=2 with unary adder
+
+The idea is the same with a few tweaks. 
+
+Given arrays a and b, which are two rows of the adjacency matrix:
+
+1. declare auxillary variables p1[i] <-> a[i] = 0 and b[i] = 1
+2. count p1 with the unary counter, name the returned counter `counter01`
+3. declare auxillary variables p2[i] <-> a[i] = 1 and b[i] = 1
+4. count p2 with the unary counter, name the returned counter `counter11`
+5. concatenate `counter01` and `counter11` then return the concatenated array
+
+```cpp
+//returns a vector of (0, 1) counter concatenated with (1, 1) counter
+vi k2(vi a, vi b, int &st){
+    vi ans;
+    vi cnt01, cnt11, counter01, counter11;
+
+    //writes variables to indicate (0, 1) pairs
+    FOR(i, 0, a.size()-1){
+        //st <-> -a[i] and b[i]
+        //cnf: (A ∨ ¬B ∨ St) ∧ (¬St ∨ ¬A) ∧ (¬St ∨ B)
+        print3(a[i], -b[i], st); print2(-st, -a[i]);  print2(-st, b[i]);
+        cnt01.pb(st++);
+    }
+
+
+    //writes variables to indicate (1, 1) pairs
+    FOR(i, 0, a.size()-1){
+        //st <-> a[i] and b[i]
+        //cnf: (-A ∨ ¬B ∨ St) ∧ (¬St ∨ A) ∧ (¬St ∨ B)
+        print3(-a[i], -b[i], st); print2(-st, a[i]);  print2(-st, b[i]);
+        cnt11.pb(st++);
+    }
+    //pass (0, 1) vector into binary adder
+    counter01 = k1(cnt01, st);
+    assert(counter01.size()==n);
+    //pass (1, 1) vector into binary adder
+    counter11 = k1(cnt11, st);
+    assert(counter11.size()==n);
+
+    ans.insert(ans.end(), counter01.begin(), counter01.end());
+    ans.insert(ans.end(), counter11.begin(), counter11.end());
+    return ans;
+}
+```
+
+### Ensuring k=2
+
+The only subtle part is the introduction of variables p1 and p2 which makes sure we check k=2 only when necessary, which is:
+
+1. the two nodes are not adjacent, and
+2. the first row of the current pair has the same number of ones as the first row
+
+```cpp
+	/*
         encode k=1 for first row
     */
-    idx = k1(row[1], idx); //idx is the next available variable. We increase it after encoding k1 for first row of adj matrix
-    int k1r1 = idx - n; //this is the first element of the unary counter
-    vi topk1; //topk1 is the unary adder that stores the k=1 constraint of the 1st row. 
-    for(int i=0;i<n;i++){
-        topk1.push_back(k1r1+i);
-    }
+    vi topk1 = k1(row[1], idx);
 
     /*
         encode k=2 additional constraints for first two rows
     */
-    vi k2r1 = k2(row[1], row[2], idx); 
-    //k2 returns a vector that contains [starting index of 1st counter, starting index of 2nd counter, index of next available variable]
-    idx = k2r1[2];
-    vi topk2; //topk2 is the unary adder that stores the k=2 additional constraint of row 1, 2. 
-    for(int i=0;i<n;i++){
-        topk2.push_back(k2r1[0]+i);
-    }
-    for(int i=0;i<n;i++){
-        topk2.push_back(k2r1[1]+i);
-    }
-
-    /*
-        Combine previous steps to produce a complete k=2 encoding
-    */
-    //top3 is the concatenated vector that will be used for ensuring k=2. It's topk1 concatenated with topk2
-    vi top3; top3.reserve(topk1.size()+topk2.size());
-    top3.insert(top3.end(), topk1.begin(), topk1.end());
-    top3.insert(top3.end(), topk2.begin(), topk2.end());
-    assert(top3.size()==3*n);
+    vi topk2 = k2(row[1], row[2], idx); 
 
 
     for(int i=1;i<=n;i++){
         /*
             encode k=1 for row i of adj matrix
         */
-        idx = k1(row[i], idx);
-        int tmp = idx - n;
 
         //curk1 is the unary adder that stores the k=1 constraint of the current row. 
-        vi curk1;
-        for(int i=0;i<n;i++) curk1.push_back(tmp+i);
-        vi a = row[i];
+        vi curk1 = k1(row[i], idx);
+        cardLeq(topk1, curk1);
+        
+        //p1 <-> row[1] and row[i] have same ardinality
+        int p1 = checkEqual(topk1, curk1, idx);
 
-        for(int j=1; j<=n;j++){//no
+        for(int j=1; j<=n;j++){
             if(i==j) continue;
             if(i==1&&j==2) continue;
 
             /*
                 encode k=2 for row i , j
             */
-            vi b = row[j];
-            vi v2 = k2(a, b, idx);
-            assert(idx+(a.size()+1)*a.size()==v2[2]);
-            idx = v2[2];
-            vi curk2; //curk2 is the unary adder that stores the k=2 additional constraint of the current pair (a, b). 
-            for(int k=0;k<n;k++){
-                curk2.push_back(v2[0]+k);
-            }
-            for(int k=0;k<n;k++){
-                curk2.push_back(v2[1]+k); 
-            }
-            assert(curk2.size()==2*n);
+            vi curk2 = k2(row[i], row[j],  idx);
 
-            vi cur3; //cur3 is the concatenated vector for the current pair that will be used for k=2
-            cur3.insert(cur3.end(), curk1.begin(), curk1.end());
-            cur3.insert(cur3.end(), curk2.begin(), curk2.end());
-            assert(cur3.size()==top3.size());
-            assert(cur3.size()==3*n);
-
+           int p2 = idx++;
+           //p2 <-> (i, j are adjacent) or (p1 is false), in which case we don't need to check anymore
+           //(p1 ∨ P2) ∧ (¬Flat ∨ P2) ∧ (¬P2 ∨ -p1 ∨ Flat)
+           print2(p1, p2); print2(-flat(i, j), p2); print3(-p2, -p1, flat(i, j));
+            
             /*
-                compares the k=2 encoding of first two rows and current pair of rows. 
+                compares the k=2 encoding of first two rows and current pair of rows iff p2 is false. 
             */
-            lex(top3, cur3, idx);
-            idx += top3.size();
+           cardLeq(topk2, curk2, p2); //an overloaded version of cardLeq that only reinforces if p2 is false
         }
     }
 ```
 
-### Condition to ensure k=3
-Similar to k=2, but instead of checking (0, 1) and (1, 1), it checks (0, 0, 1), (0, 1, 1), (1, 0, 1), (1, 1, 1). 
+
+
+
+

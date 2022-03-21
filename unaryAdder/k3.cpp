@@ -265,6 +265,45 @@ vi k2(vi a, vi b, int &st){
     return ans;
 }
 
+vi k3(vi a, vi b, vi c, int &st){
+    vi ans;
+    vi cnt001, cnt011, cnt101, cnt111, counter001, counter011, counter101, counter111;
+    FOR(i, 0, a.size()-1){
+        //st <-> -a[i] and -b[i] and c[i]
+        //(A ∨ B ∨ ¬C ∨ St) ∧ (¬St ∨ ¬A) ∧ (¬St ∨ ¬B) ∧ (¬St ∨ C)
+        print4(a[i], b[i], -c[i], st); print2(-st, -a[i]); print2(-st, -b[i]); print2(-st, c[i]);
+        cnt001.pb(st++);
+    }
+    FOR(i, 0, a.size()-1){
+        //st <-> -a[i] and b[i] and c[i]
+        //(A ∨ B ∨ ¬C ∨ St) ∧ (¬St ∨ ¬A) ∧ (¬St ∨ ¬B) ∧ (¬St ∨ C)
+        print4(a[i], -b[i], -c[i], st); print2(-st, -a[i]); print2(-st, b[i]); print2(-st, c[i]);
+        cnt011.pb(st++);
+    }
+    FOR(i, 0, a.size()-1){
+        //st <-> a[i] and -b[i] and c[i]
+        //(A ∨ B ∨ ¬C ∨ St) ∧ (¬St ∨ ¬A) ∧ (¬St ∨ ¬B) ∧ (¬St ∨ C)
+        print4(-a[i], b[i], -c[i], st); print2(-st, a[i]); print2(-st, -b[i]); print2(-st, c[i]);
+        cnt101.pb(st++);
+    }
+    FOR(i, 0, a.size()-1){
+        //st <-> a[i] and b[i] and c[i]
+        //(A ∨ B ∨ ¬C ∨ St) ∧ (¬St ∨ ¬A) ∧ (¬St ∨ ¬B) ∧ (¬St ∨ C)
+        print4(-a[i], -b[i], -c[i], st); print2(-st, a[i]); print2(-st, b[i]); print2(-st, c[i]);
+        cnt111.pb(st++);
+    }
+    counter001 = k1(cnt001, st);
+    counter011 = k1(cnt011, st);
+    counter101 = k1(cnt101, st);
+    counter111 = k1(cnt111, st);
+
+    ans.insert(ans.end(), counter001.begin(), counter001.end());
+    ans.insert(ans.end(), counter011.begin(), counter011.end());
+    ans.insert(ans.end(), counter101.begin(), counter101.end());
+    ans.insert(ans.end(), counter111.begin(), counter111.end());
+    return ans;
+}
+
 int checkEqual(vi a, vi b, int &st){
     int l = a.size();
     vi va;
@@ -372,7 +411,6 @@ int main(int argc, char* argv[]){
 
         for(int j=1; j<=n;j++){
             if(i==j) continue;
-            if(i==1&&j==2) continue;
 
             /*
                 encode k=2 for row i , j
@@ -386,6 +424,17 @@ int main(int argc, char* argv[]){
            //(Idx1 ∨ P2) ∧ (¬Flat ∨ P2) ∧ (¬P2 ∨ -Idx1 ∨ Flat)
            print2(idx1, p2); print2(-flat(i, j), p2); print3(-p2, -idx1, flat(i, j));
            cardLeq(topk2, curk2, p2);
+           int idx2 = checkEqual(topk2, curk2, idx);
+           for(int k=1;k<=n;k++){
+               if(k==i||k==j) continue;
+               if(i==1&&j==2&&k==3) continue;
+               int p3 = idx++;
+               //p3 <-> (p2 or -idx2 or flat(i, k) or flat(j, k))
+               //(¬P2 ∨ P3) ∧ (Idx2 ∨ P3) ∧ (¬Flatik ∨ P3) ∧ (¬Flatjk ∨ P3) ∧ (¬P3 ∨ P2 ∨ ¬Idx2 ∨ Flatik ∨ Flatjk)
+               print2(-p2, p3); print2(idx2, p3); print2(-flat(i, k), p3);print2(flat(j, k), p3); 
+               cout << -p3 << " " << p2 << " " << -idx2 << " " << flat(i,k) << " " << flat(j, k) << " 0\n";
+               //todo               
+           }
         }
     }
     cout << endl;

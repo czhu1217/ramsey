@@ -58,49 +58,6 @@ void iff(int a, int b){
 }
 int flat(int i, int j){ return (i-1)*n+j; }
 
-int writeLex(vi a, vi b, int start){
-    int l = a.size();
-    cout << -a[0] << " " << b[0] << " 0\n";
-    //a[i] = b[i]
-    for(int i=0;i<l-1;i++){
-        cout << -1*a[i] << " " << b[i] << " " << -1*(start+i) << " 0\n";
-        cout << a[i] << " " << -1*b[i] << " " << -1*(start+i) << " 0\n";
-        cout << a[i] << " " << b[i] << " " << (start+i) << " 0\n";
-        cout << -a[i] << " " << -b[i] << " " << start+i << " 0\n";
-    }
-    int start2 = start + l-1;
-    //a[i+1] <= b[i+1]
-    for(int i=0;i<l-1;i++){
-        cout << a[i+1] << " " << start2+i << " 0\n";
-        cout << -b[i+1] << " " << start2+i << " 0\n";
-        cout << a[i+1] << " " << b[i+1] << " " << start2+i << " 0\n";
-    }
-    int start3 = start2 + l-1;
-    // encode t3
-
-    for(int i=0; i<l-2;i++){
-        cout << start3+i << " ";
-        for(int j=0;j<=i+1;j++){
-            cout << start + j << " ";
-        }
-        cout << " 0\n";
-        for(int j=0;j<=i+1;j++){
-            cout << -1*(start3+i) << " " << start+j << " 0\n";
-        }
-    }
-
-
-    cout << -1*(start) << " " << start2 << " 0 ";
-    //not t3[j] || t2[j]
-    for(int j=0;j<l-2;j++){
-        cout << -1*(start3+j) << " " << start2 + j+1<< " 0 ";
-    }
-    return start3 + l - 2;
-
-
-}
-
-
 
 void addEdges(int sign){
     int a, b;
@@ -294,6 +251,7 @@ void cardLeq(vi a, vi b){
     }
 }
 int main(int argc, char* argv[]){
+    cout << "ok\n";
     //n is length and k is the number of colors, l is the length limit
     string outname = "k2";
     // scanf("%d %d %d", &n, &k, &l);
@@ -332,6 +290,9 @@ int main(int argc, char* argv[]){
         }
         lex(v1, v2,  idx);
     }
+    //count number of 1s in each row
+    // cout << "idx " << idx << "\n";
+    
 
     vector<vi> row;
     vector<int> offset; row.push_back(offset);
@@ -348,11 +309,41 @@ int main(int argc, char* argv[]){
     */
     vi topk1 = k1(row[1], idx);
 
-    for(int i=2;i<=n;i++){
+    /*
+        encode k=2 additional constraints for first two rows
+    */
+    vi topk2 = k2(row[1], row[2], idx); 
+
+
+    for(int i=1;i<=n;i++){
+        /*
+            encode k=1 for row i of adj matrix
+        */
+
         //curk1 is the unary adder that stores the k=1 constraint of the current row. 
         vi curk1 = k1(row[i], idx);
         // lex(topk1, curk1, idx);
         cardLeq(topk1, curk1);
+        int p1 = checkEqual(topk1, curk1, idx);
+
+
+        for(int j=1; j<=n;j++){
+            if(i==j) continue;
+            if(i==1&&j==2) continue;
+
+            /*
+                encode k=2 for row i , j
+            */
+            vi curk2 = k2(row[i], row[j],  idx);
+
+            /*
+                compares the k=2 encoding of first two rows and current pair of rows. 
+            */
+           int p2 = idx++;
+           //(Idx1 ∨ P2) ∧ (¬Flat ∨ P2) ∧ (¬P2 ∨ -Idx1 ∨ Flat)
+           print2(p1, p2); print2(-flat(i, j), p2); print3(-p2, -p1, flat(i, j));
+           cardLeq(topk2, curk2, p2);
+        }
     }
     cout << endl;
     return 0;
