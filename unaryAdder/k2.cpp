@@ -58,49 +58,6 @@ void iff(int a, int b){
 }
 int flat(int i, int j){ return (i-1)*n+j; }
 
-int writeLex(vi a, vi b, int start){
-    int l = a.size();
-    cout << -a[0] << " " << b[0] << " 0\n";
-    //a[i] = b[i]
-    for(int i=0;i<l-1;i++){
-        cout << -1*a[i] << " " << b[i] << " " << -1*(start+i) << " 0\n";
-        cout << a[i] << " " << -1*b[i] << " " << -1*(start+i) << " 0\n";
-        cout << a[i] << " " << b[i] << " " << (start+i) << " 0\n";
-        cout << -a[i] << " " << -b[i] << " " << start+i << " 0\n";
-    }
-    int start2 = start + l-1;
-    //a[i+1] <= b[i+1]
-    for(int i=0;i<l-1;i++){
-        cout << a[i+1] << " " << start2+i << " 0\n";
-        cout << -b[i+1] << " " << start2+i << " 0\n";
-        cout << a[i+1] << " " << b[i+1] << " " << start2+i << " 0\n";
-    }
-    int start3 = start2 + l-1;
-    // encode t3
-
-    for(int i=0; i<l-2;i++){
-        cout << start3+i << " ";
-        for(int j=0;j<=i+1;j++){
-            cout << start + j << " ";
-        }
-        cout << " 0\n";
-        for(int j=0;j<=i+1;j++){
-            cout << -1*(start3+i) << " " << start+j << " 0\n";
-        }
-    }
-
-
-    cout << -1*(start) << " " << start2 << " 0 ";
-    //not t3[j] || t2[j]
-    for(int j=0;j<l-2;j++){
-        cout << -1*(start3+j) << " " << start2 + j+1<< " 0 ";
-    }
-    return start3 + l - 2;
-
-
-}
-
-
 
 void addEdges(int sign){
     int a, b;
@@ -265,12 +222,12 @@ vi k2(vi a, vi b, int &st){
     return ans;
 }
 
-int checkEqual(vi a, vi b, int st){
+int checkEqual(vi a, vi b, int &st){
     int l = a.size();
     vi va;
     for(int i=0;i<l;i++){
         //(¬A ∨ ¬B ∨ C) ∧ (A ∨ B ∨ C) ∧ (¬B ∨ A ∨ ¬C) ∧ (¬A ∨ B ∨ ¬C)
-        print3(-a[i], -b[i], st); print3(a[i], b[i], st); print3(-b[i], a[i], -st); print3(-a[i], b[i], st);
+        print3(-a[i], -b[i], st); print3(a[i], b[i], st); print3(-b[i], a[i], -st); print3(-a[i], b[i], -st);
         va.push_back(st++);
     }
     for(auto e:va){
@@ -280,7 +237,7 @@ int checkEqual(vi a, vi b, int st){
     for(auto e:va) print2(-st, e);
     st++;
     //st is one larger than the actual equal variable
-    return st;
+    return st-1;
 }
 void cardLeq(vi a, vi b, int k1){
     for(int i=0;i<a.size();i++){
@@ -355,12 +312,7 @@ int main(int argc, char* argv[]){
     /*
         encode k=2 additional constraints for first two rows
     */
-    vi k2additional = k2(row[1], row[2], idx); 
-    assert(k2additional.size()==2*n);
-    vi topk2;
-    topk2.insert(topk2.end(), topk1.begin(), topk1.end());
-    topk2.insert(topk2.end(), k2additional.begin(), k2additional.end());
-    assert(topk2.size()==3*n);
+    vi topk2 = k2(row[1], row[2], idx); 
 
 
     for(int i=1;i<=n;i++){
@@ -370,7 +322,10 @@ int main(int argc, char* argv[]){
 
         //curk1 is the unary adder that stores the k=1 constraint of the current row. 
         vi curk1 = k1(row[i], idx);
-        lex(topk1, curk1, idx);
+        // lex(topk1, curk1, idx);
+        cardLeq(topk1, curk1);
+        int p1 = checkEqual(topk1, curk1, idx);
+
 
         for(int j=1; j<=n;j++){
             if(i==j) continue;
@@ -379,20 +334,15 @@ int main(int argc, char* argv[]){
             /*
                 encode k=2 for row i , j
             */
-            vi curk2additional = k2(row[i], row[j],  idx);
-
-            assert(curk2additional.size()==2*n);
-
-            vi curk2; //curk2 is the concatenated vector for the current pair that will be used for k=2
-            curk2.insert(curk2.end(), curk1.begin(), curk1.end());
-            curk2.insert(curk2.end(), curk2additional.begin(), curk2additional.end());
-            assert(curk2.size()==topk2.size());
-            assert(curk2.size()==3*n);
+            vi curk2 = k2(row[i], row[j],  idx);
 
             /*
                 compares the k=2 encoding of first two rows and current pair of rows. 
             */
-            lexConditional(topk2, curk2, idx, flat(i, j));
+           int p2 = idx++;
+           //(Idx1 ∨ P2) ∧ (¬Flat ∨ P2) ∧ (¬P2 ∨ -Idx1 ∨ Flat)
+           print2(p1, p2); print2(-flat(i, j), p2); print3(-p2, -p1, flat(i, j));
+           cardLeq(topk2, curk2, p2);
         }
     }
     cout << endl;
