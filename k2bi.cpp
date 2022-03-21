@@ -18,6 +18,7 @@
 #include <chrono>
 #include <fstream>
 #include <sstream>
+#include <cassert>
 using namespace std; 
 typedef long long ll;
 typedef long double ld;
@@ -255,7 +256,7 @@ vi k1(vector<int> a, int &start){
         //compute new accumulated sum by passing in current sum, digit, starting index of new var to rippleAdder
         ans = rippleAdder(ans, cur, start);
     }
-
+    reverse(ans.begin(), ans.end());
     return ans;
 }
 
@@ -345,20 +346,25 @@ int main(int argc, char* argv[]){
         }
         row.push_back(a);
     }
-/*
+
+    //set two variables to be used as 1 and 0 in the binary adder
+    zero = idx, one = idx+1;
+    cout << -idx << " 0\n"; idx++;
+    cout << idx << " 0\n"; idx++;
+    /*
         encode k=1 for first row
     */
     vi topk1 = k1(row[1], idx);
-    reverse(topk1.begin(), topk1.end());
+    // reverse(topk1.begin(), topk1.end());
 
     /*
         encode k=2 additional constraints for first two rows
     */
-    // vi k2additional = k2(row[1], row[2], idx); 
-    // // assert(k2additional.size()==2*n);
-    // vi topk2;
-    // topk2.insert(topk2.end(), topk1.begin(), topk1.end());
-    // topk2.insert(topk2.end(), k2additional.begin(), k2additional.end());
+    vi k2additional = k2(row[1], row[2], idx); 
+    // // // assert(k2additional.size()==2*n);
+    vi topk2;
+    topk2.insert(topk2.end(), topk1.begin(), topk1.end());
+    topk2.insert(topk2.end(), k2additional.begin(), k2additional.end());
     // assert(topk2.size()==3*n);
 
 
@@ -369,31 +375,31 @@ int main(int argc, char* argv[]){
 
         //curk1 is the unary adder that stores the k=1 constraint of the current row. 
         vi curk1 = k1(row[i], idx);
-        reverse(curk1.begin(), curk1.end());
+        // reverse(curk1.begin(), curk1.end());
         lex(topk1, curk1, idx);
 
-        // for(int j=1; j<=n;j++){
-        //     if(i==j) continue;
-        //     if(i==1&&j==2) continue;
+        for(int j=1; j<=n;j++){
+            if(i==j) continue;
+            if(i==1&&j==2) continue;
 
-        //     /*
-        //         encode k=2 for row i , j
-        //     */
-        //     vi curk2additional = k2(row[i], row[j],  idx);
+            /*
+                encode k=2 for row i , j
+            */
+            vi curk2additional = k2(row[i], row[j],  idx);
 
-        //     // assert(curk2additional.size()==2*n);
+            // assert(curk2additional.size()==2*n);
 
-        //     vi curk2; //curk2 is the concatenated vector for the current pair that will be used for k=2
-        //     curk2.insert(curk2.end(), curk1.begin(), curk1.end());
-        //     curk2.insert(curk2.end(), curk2additional.begin(), curk2additional.end());
-        //     assert(curk2.size()==topk2.size());
-        //     // assert(curk2.size()==3*n);
+            vi curk2; //curk2 is the concatenated vector for the current pair that will be used for k=2
+            curk2.insert(curk2.end(), curk1.begin(), curk1.end());
+            curk2.insert(curk2.end(), curk2additional.begin(), curk2additional.end());
+            assert(curk2.size()==topk2.size());
+            // assert(curk2.size()==3*n);
 
-        //     /*
-        //         compares the k=2 encoding of first two rows and current pair of rows. 
-        //     */
-        //     lexConditional(topk2, curk2, idx, flat(i, j));
-        // }
+            /*
+                compares the k=2 encoding of first two rows and current pair of rows. 
+            */
+            lexConditional(topk2, curk2, idx, flat(i, j));
+        }
     }
     cout << endl;
     return 0;
