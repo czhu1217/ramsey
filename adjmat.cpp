@@ -46,13 +46,20 @@ typedef vector<pl> vpl;
 #define ins insert
 
 int main(int argc, char* argv[]){
-    int cnt = 0;
-    int a;
-    while (cin >> a)
-    {
-        if(a>0) cout << 1; else cout << 0;
+    int tot = 1;
+    int n=stoi(argv[1]);
+    int num = stoi(argv[2]);
+    while(num--){
+        // cout << tot++ << "\n";
+        int cnt = 0; int a;
+        while(cnt<n*n){
+            cin >> a;
+            if(a>0) cout << 1; else cout << 0;
+            cnt++;
+        }
+        cout << "\n";
     }
-    cout << "\n";
+
 
     
 }

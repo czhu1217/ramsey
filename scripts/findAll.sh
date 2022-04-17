@@ -9,13 +9,12 @@ else
     N2=$(( N * N ))
 
     SATISFIABLE=1
+    COUNTER=0
 
-    ./unaryAdder/ramsey.exe $N $K
+    ./ramsey/unaryAdder/ramsey.exe $N $K
     ./toCNF.exe all${N}_${K}.out
     > all_adjmat_${N}_${K}.txt
     > missing_${N}_${K}.txt
-
-    
 
     
 
@@ -30,7 +29,9 @@ else
             #check if unsatisfiable
             if grep -q "UNSATISFIABLE" all_out_${N}_${K}.txt
 
-            then SATISFIABLE=0
+            then 
+                SATISFIABLE=0
+                echo "UNSAT"
 
             else
 
