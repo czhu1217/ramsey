@@ -46,7 +46,7 @@ typedef vector<pl> vpl;
 #define ins insert
 
 //choose vertices
-int n, l, k;
+int n, k;
 vector<vector<int>> vec2d;
 vector<int> v;
 void print2(int a, int b){ cout << a << " " << b << " 0\n";}
@@ -146,9 +146,21 @@ void addEdges2(int sign){
     #endif
 }
 
-void pickV(int cur,int m, int sign){
+void pickV2(int cur,int m, int sign){
     if(v.size()==m){
         addEdges2(sign);
+        return;
+    }
+    if(cur>n) return;
+    v.push_back(cur);
+    pickV2(cur+1, m, sign);
+    v.pop_back();
+    pickV2(cur+1, m, sign);
+}
+
+void pickV(int cur,int m, int sign){
+    if(v.size()==m){
+        addEdges(sign);
         return;
     }
     if(cur>n) return;
@@ -253,15 +265,58 @@ vi k2(vi a, vi b, int &st){
         print3(-a[i], -b[i], st); print2(-st, a[i]);  print2(-st, b[i]);
         cnt11.pb(st++);
     }
+
     //pass (0, 1) vector into binary adder
     counter01 = k1(cnt01, st);
     assert(counter01.size()==n);
+
     //pass (1, 1) vector into binary adder
     counter11 = k1(cnt11, st);
+
     assert(counter11.size()==n);
+
 
     ans.insert(ans.end(), counter01.begin(), counter01.end());
     ans.insert(ans.end(), counter11.begin(), counter11.end());
+    return ans;
+}
+
+vi k3(vi a, vi b, vi c, int &st){
+    vi ans;
+    vi cnt001, cnt011, cnt101, cnt111, counter001, counter011, counter101, counter111;
+    FOR(i, 0, a.size()-1){
+        //st <-> -a[i] and -b[i] and c[i]
+        //(A ∨ B ∨ ¬C ∨ St) ∧ (¬St ∨ ¬A) ∧ (¬St ∨ ¬B) ∧ (¬St ∨ C)
+        print4(a[i], b[i], -c[i], st); print2(-st, -a[i]); print2(-st, -b[i]); print2(-st, c[i]);
+        cnt001.pb(st++);
+    }
+    FOR(i, 0, a.size()-1){
+        //st <-> -a[i] and b[i] and c[i]
+        //(A ∨ B ∨ ¬C ∨ St) ∧ (¬St ∨ ¬A) ∧ (¬St ∨ ¬B) ∧ (¬St ∨ C)
+        print4(a[i], -b[i], -c[i], st); print2(-st, -a[i]); print2(-st, b[i]); print2(-st, c[i]);
+        cnt011.pb(st++);
+    }
+    FOR(i, 0, a.size()-1){
+        //st <-> a[i] and -b[i] and c[i]
+        //(A ∨ B ∨ ¬C ∨ St) ∧ (¬St ∨ ¬A) ∧ (¬St ∨ ¬B) ∧ (¬St ∨ C)
+        print4(-a[i], b[i], -c[i], st); print2(-st, a[i]); print2(-st, -b[i]); print2(-st, c[i]);
+        cnt101.pb(st++);
+    }
+    FOR(i, 0, a.size()-1){
+        //st <-> a[i] and b[i] and c[i]
+        //(A ∨ B ∨ ¬C ∨ St) ∧ (¬St ∨ ¬A) ∧ (¬St ∨ ¬B) ∧ (¬St ∨ C)
+        print4(-a[i], -b[i], -c[i], st); print2(-st, a[i]); print2(-st, b[i]); print2(-st, c[i]);
+        cnt111.pb(st++);
+    }
+    counter001 = k1(cnt001, st);
+    counter011 = k1(cnt011, st);
+    counter101 = k1(cnt101, st);
+    counter111 = k1(cnt111, st);
+
+    ans.insert(ans.end(), counter001.begin(), counter001.end());
+    ans.insert(ans.end(), counter011.begin(), counter011.end());
+    ans.insert(ans.end(), counter101.begin(), counter101.end());
+    ans.insert(ans.end(), counter111.begin(), counter111.end());
     return ans;
 }
 
@@ -295,23 +350,20 @@ void cardLeq(vi a, vi b){
 }
 int main(int argc, char* argv[]){
     //n is length and k is the number of colors, l is the length limit
-    string outname = "k2";
+    string outname = "all";
     // scanf("%d %d %d", &n, &k, &l);
     string tmp;
     n = stoi(argv[1]);
     k = stoi(argv[2]);
-    l = stoi(argv[3]);
+    outname += to_string(n) + "_" + to_string(k) + ".out";
     // n = 20; k = 5; l = 5; lex = 1;
+    freopen(outname.c_str(), "w", stdout);
 
-    outname += "_" + to_string(n) + ".out";
-    #ifdef DEBUG
-        printf("debug\n");
-    #else 
-        // freopen(outname.c_str(), "w", stdout);
-    #endif
-
-    pickV(1, k, 1);
-    pickV(1, l, -1);
+    int n1, n2;
+    n1 = 4;
+    n2 = 5;
+    pickV2(1, n1, 1);
+    pickV(1, n2, -1);
     //ensures symmetry
     for(int i=1;i<=n;i++){
         cout << -flat(i, i) << " 0\n";
@@ -332,6 +384,9 @@ int main(int argc, char* argv[]){
         }
         lex(v1, v2,  idx);
     }
+    //count number of 1s in each row
+    // cout << "idx " << idx << "\n";
+    
 
     vector<vi> row;
     vector<int> offset; row.push_back(offset);
@@ -348,11 +403,81 @@ int main(int argc, char* argv[]){
     */
     vi topk1 = k1(row[1], idx);
 
-    for(int i=2;i<=n;i++){
+    /*
+        encode k=2 additional constraints for first two rows
+    */
+    vi topk2_2;
+    vi topk2_1;
+    vi topk2;
+    if(k>=2){
+        topk2 = k2(row[1], row[2], idx); 
+        assert(topk2.size()==n*2);
+        FOR(i, 0, n-1) topk2_1.pb(topk2[i]);
+        FOR(i, n, n*2-1) topk2_2.pb(topk2[i]);
+        // assert(topk2_1.size()==0);
+    }
+    
+
+
+    for(int i=1;i<=n;i++){
+        /*
+            encode k=1 for row i of adj matrix
+        */
+
         //curk1 is the unary adder that stores the k=1 constraint of the current row. 
         vi curk1 = k1(row[i], idx);
         // lex(topk1, curk1, idx);
         cardLeq(topk1, curk1);
+        int idx1 = checkEqual(topk1, curk1, idx);
+
+        if(k>=2){
+            for(int j=1; j<=n;j++){
+
+                if(i==j) continue;
+
+                /*
+                    encode k=2 for row i , j
+                */
+                vi curk2 = k2(row[i], row[j],  idx);
+
+                /*
+                    compares the k=2 encoding of first two rows and current pair of rows. 
+                */
+                int p2 = idx++;
+                //(Idx1 ∨ P2) ∧ (¬Flat ∨ P2) ∧ (¬P2 ∨ -Idx1 ∨ Flat)
+                print2(idx1, p2); print2(-flat(i, j), p2); print3(-p2, -idx1, flat(i, j));
+                vi curk2_1;
+                FOR(i, 0, n-1) curk2_1.pb(curk2[i]);
+                assert(curk2_1.size()==n);
+                vi curk2_2;
+                FOR(i, n, n*2-1) curk2_2.pb(curk2[i]);
+                assert(curk2_2.size()==n);
+
+
+                cardLeq(topk2_1, curk2_1, p2);
+                int eq2 = checkEqual(topk2_1, curk2_1, idx);
+                int p3 = idx++;
+                //p3 <-> p2 or -eq2;
+                print2(-p2, p3); print2(eq2, p3); print3(-p3, p2, -eq2);
+                cardLeq(topk2_2, curk2_2, p3);
+
+                // if(k>=3){
+                //     for(int k=1;k<=n;k++){
+                //     if(k==i||k==j) continue;
+                //     if(i==1&&j==2&&k==3) continue;
+                //     int p3 = idx++;
+                //     //p3 <-> (p2 or -idx2 or flat(i, k) or flat(j, k))
+                //     //(¬P2 ∨ P3) ∧ (Idx2 ∨ P3) ∧ (¬Flatik ∨ P3) ∧ (¬Flatjk ∨ P3) ∧ (¬P3 ∨ P2 ∨ ¬Idx2 ∨ Flatik ∨ Flatjk)
+                //     print2(-p2, p3); print2(idx2, p3); print2(-flat(i, k), p3);print2(flat(j, k), p3); 
+                //     cout << -p3 << " " << p2 << " " << -idx2 << " " << flat(i,k) << " " << flat(j, k) << " 0\n";
+                //     //todo               
+                // }
+                // }
+           
+            }
+
+        }
+        
     }
     cout << endl;
     return 0;

@@ -26,10 +26,8 @@ typedef pair<int,int> pi;
 
 int main(int argc, char *argv[])
 {
-    //Takes in arguments ./-.exe filename
-    if(argc<2){
-        throw 1;
-    }
+
+
 
     freopen(argv[1],"r",stdin);
 
